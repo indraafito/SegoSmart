@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import LoginValidation from "./components/LoginValidation";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
 import axios from "axios";
 
 const App = () => {
@@ -21,16 +23,13 @@ const App = () => {
 
   useEffect(() => {
     async function fetchingData() {
-      let riwayatList = null
-      if (from && to)
-      {
-        riwayatList = await axios.get(`${apiUrl}/riwayat/tampilRiwayat/filter/?from=${from}&to=${to}`);
-      }
-      else
-      {
+      let riwayatList = null;
+      if (from && to) {
         riwayatList = await axios.get(
-          `${apiUrl}/riwayat/tampilRiwayat/All`
+          `${apiUrl}/riwayat/tampilRiwayat/filter/?from=${from}&to=${to}`
         );
+      } else {
+        riwayatList = await axios.get(`${apiUrl}/riwayat/tampilRiwayat/All`);
       }
 
       const total = riwayatList.data.reduce(
@@ -64,21 +63,26 @@ const App = () => {
       const responsesMenu = await Promise.all(promisesMenu);
 
       const menus = responsesMenu.map((responseArray) =>
-        responseArray.map((response) => response.data)
+        responseArray
+          .filter((response) => response.data) // Hanya data yang valid
+          .map((response) => response.data)
       );
 
-      const riwayats = riwayatList.data.map((item, index) => ({
-        ...item,
-        item: items[index],
-        menu: menus[index],
-      }));
-
+      const riwayats = riwayatList.data.map((item, index) => {
+        const itemMenus = items[index] || []; // Ensure items[index] is valid
+        const menuDetails = menus[index] || []; // Ensure menus[index] is valid
+        return {
+          ...item,
+          item: itemMenus.filter(Boolean), // Filter out null items
+          menu: menuDetails.filter(Boolean), // Filter out null menus
+        };
+      });
       setRiwayats(riwayats);
     }
 
     fetchingData();
   }, [apiUrl, from, to]);
-  
+
   const formatRupiah = (number) => {
     return new Intl.NumberFormat("id-ID", {
       style: "currency",
@@ -104,19 +108,18 @@ const App = () => {
     setSelectedDateFrom(event.target.value);
   const handleDateToChange = (event) => setSelectedDateTo(event.target.value);
 
-  const handleFilter = () =>
-  {
-    if (!selectedDateFrom && !selectedDateTo){
-      window.location.href = `/aktivitas`
-      return
-    } 
-      if (!selectedDateFrom || !selectedDateTo) {
-        alert("isi kedua tanggal");
-        return;
-      }
+  const handleFilter = () => {
+    if (!selectedDateFrom && !selectedDateTo) {
+      window.location.href = `/aktivitas`;
+      return;
+    }
+    if (!selectedDateFrom || !selectedDateTo) {
+      alert("isi kedua tanggal");
+      return;
+    }
 
-    window.location.href = `/aktivitas/?from=${selectedDateFrom}&to=${selectedDateTo}`
-  }
+    window.location.href = `/aktivitas/?from=${selectedDateFrom}&to=${selectedDateTo}`;
+  };
 
   const formatDateTime = (mysqlDatetime) => {
     const date = new Date(mysqlDatetime); // Ubah ke objek Date
@@ -131,6 +134,85 @@ const App = () => {
     return new Intl.DateTimeFormat("id-ID", options).format(date);
   };
 
+  const handlePrintToPDF = () => {
+    const doc = new jsPDF("p", "mm", "a4");
+    let y = 10;
+  
+    // Tambahkan Judul
+    doc.setFontSize(18);
+    doc.setFont("helvetica", "bold");
+    doc.text("Laporan Aktivitas", 105, y, { align: "center" });
+    y += 15;
+  
+    // Tampilkan Total Harga dan Rata-rata Rating
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Total Harga: ${formatRupiah(totalHarga)}`, 10, y);
+    y += 8;
+    doc.text(`Rata-rata Rating: ${averageRating.toFixed(1)} / 5`, 10, y);
+    y += 15;
+  
+    // Siapkan Data untuk Tabel
+    const tableData = riwayats.flatMap((riwayat, index) =>
+      riwayat.item.map((item, itemIndex) => {
+        const menu = riwayat.menu[itemIndex];
+        return [
+          `${index + 1}-${itemIndex + 1}`, // No
+          formatDateTime(riwayat.createdAt), // Tanggal
+          menu?.nama_menu || "-", // Nama Menu
+          item.jumlah, // Jumlah
+          formatRupiah(item.sub_total), // Subtotal
+          formatRupiah(
+            item.sub_total - (item.sub_total * item.diskon) / 100
+          ), // Harga Awal
+          item.diskon + "%", // Total Diskon
+          formatRupiah(riwayat.total_harga), // Total Harga
+        ];
+      })
+    );
+  
+    // Tambahkan Tabel
+    doc.autoTable({
+      head: [
+        [
+          "No",
+          "Tanggal",
+          "Nama Menu",
+          "Jumlah",
+          "Subtotal",
+          "Harga Sebelum Diskon",
+          "Total Diskon",
+          "Total Harga",
+        ],
+      ],
+      body: tableData,
+      startY: y,
+      styles: {
+        fontSize: 11, // Sesuaikan ukuran font
+        cellPadding: 5, // Padding sesuai desain Tailwind
+        font: "helvetica",
+        valign: "middle", // Vertikal rata tengah
+        halign: "center", // Horizontal rata tengah
+        lineColor: [229, 231, 235], // Warna abu-abu Tailwind
+        lineWidth: 0.5, // Ketebalan garis
+      },
+      headStyles: {
+        fillColor: [15, 23, 42], // Warna biru tua Tailwind (bg-gray-900)
+        textColor: [255, 255, 255], // Warna putih untuk teks header
+        fontStyle: "bold",
+      },
+      alternateRowStyles: {
+        fillColor: [240, 240, 240], // Warna abu-abu terang Tailwind (bg-gray-100)
+      },
+      tableLineWidth: 0.25,
+      tableLineColor: [229, 231, 235],
+    });
+  
+    // Simpan PDF
+    doc.save("Laporan_Aktivitas.pdf");
+  };
+  
+  
   return (
     <motion.div className="flex flex-col min-h-screen max-w-md mx-auto p-4 sm:p-6 md:p-8 lg:max-w-3xl">
       <motion.div
@@ -150,7 +232,6 @@ const App = () => {
             Aktivitas
           </h1>
         </div>
-
         <motion.div
           className="mt-4 flex justify-center space-x-4"
           initial={{ opacity: 0 }}
@@ -193,6 +274,12 @@ const App = () => {
           >
             <i class="fas fa-search"></i>
           </button>
+          <button
+            className="bg-[#A79277] text-white px-4 py-2 rounded-lg flex items-center justify-center"
+            onClick={handlePrintToPDF}
+          >
+            <i className="fas fa-print mr-2"></i>
+          </button>
         </motion.div>
       </motion.div>
 
@@ -216,20 +303,27 @@ const App = () => {
                 transition={{ delay: 0.2 * index, duration: 0.6 }}
               >
                 <img
-                  key={index} // Tambahkan key untuk elemen dalam iterasi
-                  src={publicUrl + "/images/menu/" + riwayat.menu[0].gambar}
+                  src={
+                    riwayat.menu?.[0]?.gambar
+                      ? `${publicUrl}/images/menu/${riwayat.menu[0].gambar}`
+                      : `${publicUrl}/images/default-image.jpg`
+                  }
                   alt="Food item"
                   className="w-16 h-16 rounded-lg mr-4 sm:w-20 sm:h-20"
                 />
                 <div className="flex-grow">
                   <h2 className="font-bold text-sm sm:text-base text-left">
-                    {riwayat.menu.map((m, index) => {
-                      if (index !== riwayat.menu.length - 1) {
-                        return m.nama_menu + ", ";
-                      }
-                      return m.nama_menu + ".";
-                    })}
+                    {riwayat.menu &&
+                      riwayat.menu.map((m, index) => {
+                        if (m && m.nama_menu) {
+                          return index !== riwayat.menu.length - 1
+                            ? `${m.nama_menu}, `
+                            : `${m.nama_menu}.`;
+                        }
+                        return null; // Skip if menu is null or doesn't have nama_menu
+                      })}
                   </h2>
+
                   <p className="text-gray-600 text-xs sm:text-sm text-left">
                     {formatDateTime(riwayat.createdAt)}
                   </p>
