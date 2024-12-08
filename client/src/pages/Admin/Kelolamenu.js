@@ -2,20 +2,20 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import LoginValidation from "./components/LoginValidation";
+import AOS from "aos";
+import "aos/dist/aos.css";
 
-// Komponen MenuItem untuk merender satu item menu
 const App = () => {
   const navigate = useNavigate();
   const apiUrl = process.env.REACT_APP_API_URL;
   const publicUrl = process.env.PUBLIC_URL;
 
-  // State untuk daftar menu
   const [menuItems, setMenuItems] = useState([]);
   const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
 
-  // Mengambil data menu dari API
   useEffect(() => {
+    AOS.init({ duration: 1000, once: true });
     async function fetchData() {
       try {
         const response = await axios.get(
@@ -53,20 +53,20 @@ const App = () => {
         {/* Tombol aksi */}
         <div className="flex flex-row item-center justify-center w-full mt-2 space-x-[4px]">
           <button
-            className="bg-gray-400 text-white px-[5px] py-[2px] rounded-full flex items-center text-[8px] sm:text-[12px]"
+            className="bg-[rgba(167,146,119,0.7)] text-white px-[5px] py-[2px] rounded-full flex items-center text-[8px] sm:text-[12px] hover:scale-105 transform transition duration-300"
             onClick={() => onView(title)}
           >
             Lihat <i className="fas fa-eye ml-[3px] text-[8px]"></i>
           </button>
           <button
-            className="bg-blue-500 text-white px-[5px] py-[2px] rounded-full flex items-center text-[8px] sm:text-[12px]"
-            onClick={() => onEdit()} // Call onEdit without passing title
+            className="bg-blue-500 text-white px-[5px] py-[2px] rounded-full flex items-center text-[8px] sm:text-[12px] hover:scale-105 transform transition duration-300"
+            onClick={() => onEdit()} 
           >
             Ubah <i className="fas fa-edit ml-[3px] text-[8px]"></i>
           </button>
 
           <button
-            className="bg-red-500 text-white px-[5px] py-[2px] rounded-full flex items-center text-[8px] sm:text-[12px]"
+            className="bg-red-500 text-white px-[5px] py-[2px] rounded-full flex items-center text-[8px] sm:text-[12px] hover:scale-105 transform transition duration-300"
             onClick={() => onDelete()}
           >
             Hapus <i className="fas fa-trash ml-[3px] text-[8px]"></i>
@@ -76,21 +76,18 @@ const App = () => {
     );
   };
 
-  // Fungsi untuk tombol kembali
   const handleBackClick = () => {
     navigate("/profil");
   };
 
-  // Fungsi untuk menghapus item
   const handleDeleteMenu = async (id_menu) => {
     try {
       const response = await axios.delete(
        ` ${apiUrl}/menu/hapusMenu/${id_menu}`
       );
       if (response.data.success) {
-        // Menghapus menu dari daftar di frontend setelah berhasil dihapus
         setMenuItems(menuItems.filter((menu) => menu.id_menu !== id_menu));
-        setDeleteModalOpen(false); // Menutup modal setelah penghapusan berhasil
+        setDeleteModalOpen(false); 
       }
     } catch (error) {
       console.error("Error deleting menu:", error);
@@ -98,16 +95,14 @@ const App = () => {
   };
 
 
-  // Fungsi untuk mengedit item
   const handleEditClick = (id_menu) => {
-    navigate(`/Editmenu/${id_menu}`); // Pass id_menu to navigate
+    navigate(`/Editmenu/${id_menu}`); 
   };
 
   const handleViewClick = (title) => {
     navigate(`/infomenu/${title}`);
   };
 
-  // Fungsi untuk menambah menu baru
   const handleAddMenuClick = () => {
     navigate("/tambahmenu");
   };
@@ -115,9 +110,9 @@ const App = () => {
   return (
     <div className="p-6 relative max-w-full overflow-hidden">
       {/* Tombol kembali */}
-      <div className="absolute left-4 top-4 z-10">
+      <div className="absolute left-4 top-4 z-10 ">
         <button
-          className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center cursor-pointer"
+          className="w-10 h-10 bg-[rgba(167,146,119,0.2)] rounded-full flex items-center justify-center cursor-pointer hover:scale-105 transform transition duration-300"
           onClick={handleBackClick}
         >
           <i className="fas fa-chevron-left"></i>
@@ -133,7 +128,7 @@ const App = () => {
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">Daftar Menu</h2>
         <button
-          className="bg-[#A79277] text-white px-3 py-1 rounded-full flex items-center"
+          className="bg-[#A79277] text-white px-3 py-1 rounded-full flex items-center hover:scale-105 transform transition duration-300"
           onClick={handleAddMenuClick}
         >
           Tambah Menu <i className="fas fa-plus ml-2"></i>
@@ -167,7 +162,7 @@ const App = () => {
             </h2>
             <div className="flex justify-center space-x-4">
               <button
-                onClick={() => handleDeleteMenu(itemToDelete)} // Passed itemToDelete here
+                onClick={() => handleDeleteMenu(itemToDelete)} 
                 className="bg-green-500 text-white px-6 py-3 rounded-md hover:bg-green-600"
               >
                 IYA

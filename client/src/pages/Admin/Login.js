@@ -1,18 +1,20 @@
 import React, { useEffect, useState } from "react";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import { Link, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
 import axios from "axios";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
+import AOS from "aos";
+import "aos/dist/aos.css";
 
 export default function App() {
   const [showPassword, setShowPassword] = useState(false);
-  const [showPopup, setShowPopup] = useState(false); // State untuk pop-up
+  const [showPopup, setShowPopup] = useState(false); 
   const navigate = useNavigate();
   const apiUrl = process.env.REACT_APP_API_URL
 
   useEffect(() => {
+    AOS.init({ duration: 400, once: true });
     async function fetchingData() {
       const token = localStorage.getItem("admin");
       if (token) {
@@ -51,7 +53,7 @@ export default function App() {
       const login = await axios.post(`${apiUrl}/Admin/Login`, data);
 
       if (login.data.error) {
-        setShowPopup(true); // Tampilkan pop-up jika ada error
+        setShowPopup(true); 
         return;
       }
 
@@ -64,36 +66,16 @@ export default function App() {
   };
 
   const closePopup = () => {
-    setShowPopup(false); // Tutup pop-up
+    setShowPopup(false); 
   };
 
   return (
-    <motion.div
-      className="flex items-center justify-center min-h-screen bg-white-800 px-4 sm:px-0"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 1 }}
-    >
-      <motion.div
-        className="bg-white rounded-lg p-6 sm:p-8 w-full max-w-xs sm:max-w-sm"
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.6 }}
-      >
-        <motion.h1
-          className="text-2xl font-bold mb-2 text-left sm:text-left"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2, duration: 1 }}
-        >
+    <div className="flex items-center justify-center min-h-screen bg-white-800 px-4 sm:px-0">
+      <div className="bg-white rounded-lg p-6 sm:p-8 w-full max-w-xs sm:max-w-sm">
+        <h1 className="text-2xl font-bold mb-2 text-left sm:text-left">
           Selamat datang
-        </motion.h1>
-        <p
-          className="text-sm text-[#A79277] mb-6 text-left sm:text-left"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.4, duration: 1 }}
-        >
+        </h1>
+        <p className="text-sm text-[#A79277] mb-6 text-left sm:text-left">
           Selamat datang kembali, silakan masuk untuk melanjutkan
         </p>
         <Formik
@@ -140,14 +122,14 @@ export default function App() {
                   onClick={togglePasswordVisibility}
                 ></i>
               </div>
-              <div className="text-right mt-2">
+              {/* <div className="text-right mt-2">
                 <Link
                   to="/lupapassword"
                   className="text-sm text-[#A79277] hover:text-yellow-800 transition duration-200"
                 >
                   Lupa password?
                 </Link>
-              </div>
+              </div> */}
             </div>
 
             <button
@@ -158,7 +140,7 @@ export default function App() {
             </button>
           </Form>
         </Formik>
-      </motion.div>
+      </div>
 
       {showPopup && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
@@ -179,6 +161,6 @@ export default function App() {
           </div>
         </div>
       )}
-    </motion.div>
+    </div>
   );
 }

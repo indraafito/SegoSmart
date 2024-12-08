@@ -1,4 +1,3 @@
-// App.jsx
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -7,12 +6,11 @@ function App() {
   const publicUrl =process.env.PUBLIC_URL;
 
   useEffect(() => {
-    // Navigasi otomatis ke halaman login setelah 3 detik
     const timer = setTimeout(() => {
       navigate("/login");
     }, 3000);
 
-    return () => clearTimeout(timer); // Membersihkan timer saat komponen dibongkar
+    return () => clearTimeout(timer); 
   }, [navigate]);
 
   return (

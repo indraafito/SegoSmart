@@ -5,12 +5,15 @@ import {
   XCircleIcon,
 } from "@heroicons/react/outline";
 import { QrcodeIcon } from "@heroicons/react/outline";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { useNavigate } from "react-router-dom";
 import LoginValidation from "./components/LoginValidation";
 import axios from "axios";
+import AOS from "aos";
+import "aos/dist/aos.css";
 
+AOS.init({ duration: 400, once: true });
 function App() {
-  const navigate = useNavigate(); // Initialize useNavigate hook
+  const navigate = useNavigate();
   const [selectedMethod, setSelectedMethod] = useState("Tunai");
   const [jenispesanan, setJenispesanan] = useState("Offline");
   const [showAlert, setShowAlert] = useState(false);
@@ -23,7 +26,6 @@ function App() {
   const [keranjanglist, setkeranjanglist] = useState([]);
   const apiUrl = process.env.REACT_APP_API_URL;
 
-  //scan
   const [showCamera, setShowCamera] = useState(false);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -72,30 +74,29 @@ function App() {
 
   const handleCloseBayar = () => {
     setShowSuccessPopup(false);
-    navigate("/beranda"); 
+    navigate("/beranda");
   };
-  
-  const handleCloseScan =async () => {
-    setShowCamera(false); // Reset camera visibility
-    console.log(analysisResult)
+
+  const handleCloseScan = async () => {
+    setShowCamera(false);
+    console.log(analysisResult);
     const rating = await axios.post(`${apiUrl}/riwayat/unggahKepuasan`, {
-      kepuasan:analysisResult
-    })
-    console.log(rating.data)
-    if(rating.data.success){
+      kepuasan: analysisResult,
+    });
+    console.log(rating.data);
+    if (rating.data.success) {
       setShowScanSuccess(false);
       navigate("/beranda");
     }
   };
 
   const handleScanSatisfaction = () => {
-    setShowSuccessPopup(false)
+    setShowSuccessPopup(false);
     setShowScanSuccess(false);
     setShowScanError(false);
     setShowCamera(true);
   };
 
-  // Simulasi pemindaian sukses setelah beberapa detik
   const handleStartScan = async () => {
     try {
       const mediaStream = await navigator.mediaDevices.getUserMedia({
@@ -105,10 +106,7 @@ function App() {
     } catch (error) {
       console.error("Tidak dapat mengakses kamera:", error);
     }
-
-    // Ubah waktu ini sesuai kebutuhan
   };
-  // Simulasi pemindaian sukses setelah beberapa detik
   const handleScan = async () => {
     handleStartScan();
     setTimeout(() => {
@@ -118,15 +116,15 @@ function App() {
       setShowLoading(true);
     }, 3000);
   };
-  
+
   const stopCamera = () => {
     const stream = videoRef.current.srcObject;
     if (stream) {
-      stream.getTracks().forEach((track) => track.stop()); // Stop semua track
-      videoRef.current.srcObject = null; // Hapus stream dari video element
+      stream.getTracks().forEach((track) => track.stop());
+      videoRef.current.srcObject = null;
     }
   };
-  
+
   const captureImage = () => {
     const canvas = canvasRef.current;
     const video = videoRef.current;
@@ -140,18 +138,15 @@ function App() {
 
   const uploadImageToServer = async (dataUrl) => {
     try {
-      // Ubah Data URL ke Blob
       const blob = await fetch(dataUrl).then((res) => res.blob());
       const formData = new FormData();
       formData.append("file", blob, "temp.jpg");
-
-      // Kirim ke server Flask
       const response = await axios.post(
         "http://127.0.0.1:5000/analyze",
         formData
       );
       if (response.data.satisfaction_rating) {
-        setAnalysisResult(response.data.satisfaction_rating); // Memperbarui hasil analisis
+        setAnalysisResult(response.data.satisfaction_rating);
         setShowLoading(false);
         setShowScanSuccess(true);
       } else {
@@ -165,19 +160,15 @@ function App() {
   };
 
   const handleBackClick = () => {
-    navigate("/keranjang"); // Navigate to keranjang page
+    navigate("/keranjang");
   };
 
   useEffect(() => {
     async function fetchingData() {
-      const cartList = await axios.get(
-        `${apiUrl}/Keranjang/tampilKeranjang`
-      );
+      const cartList = await axios.get(`${apiUrl}/Keranjang/tampilKeranjang`);
 
       const promises = await cartList.data.map((item) => {
-        return axios.get(
-          `${apiUrl}/Menu/tampilMenu/Byid/${item.id_menu}`
-        );
+        return axios.get(`${apiUrl}/Menu/tampilMenu/Byid/${item.id_menu}`);
       });
       const respon = await Promise.all(promises);
       const daftarmenu = respon.map((respon) => respon.data);
@@ -210,28 +201,12 @@ function App() {
 
   return (
     <div className="flex flex-col items-center p-4 bg-white min-h-screen font-inter">
-      {/* Tombol Kembali di sebelah kiri */}
       <div className="w-full flex items-center mb-4">
-        <button onClick={handleBackClick} className="text-left">
-          {" "}
-          {/* Add onClick to navigate back */}
-          <span className="rounded-full bg-gray-300 p-2 inline-flex items-center mt-2">
-            <span className="sr-only">Back</span>
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M15 19l-7-7 7-7"
-              ></path>
-            </svg>
-          </span>
+        <button
+          onClick={handleBackClick}
+          className="text-left w-10 h-10 bg-[rgba(167,146,119,0.2)]  flex items-center justify-center rounded-full transition-all duration-300 ease-in-out transform hover:scale-110"
+        >
+          <i className="fas fa-chevron-left text-sm"></i>
         </button>
       </div>
 
@@ -242,11 +217,11 @@ function App() {
         {/* Pilihan Tunai */}
         <button
           onClick={() => handleSelect("Tunai")}
-          className={`w-full flex items-center justify-between p-4 rounded-lg mb-2 ${
+          className={`w-full flex items-center justify-between p-4 rounded-lg mb-2 transform transition-all duration-300 ease-in-out ${
             selectedMethod === "Tunai"
               ? "bg-[rgb(167,146,119)]"
               : "bg-[rgba(167,146,119,0.2)]"
-          }`}
+          } hover:scale-105`}
         >
           <div className="flex items-center space-x-2">
             <CashIcon
@@ -272,11 +247,11 @@ function App() {
         {/* Pilihan Qris */}
         <button
           onClick={() => handleSelect("Qris")}
-          className={`w-full flex items-center justify-between p-4 rounded-lg ${
+          className={`w-full flex items-center justify-between p-4 rounded-lg transform transition-all duration-300 ease-in-out ${
             selectedMethod === "Qris"
               ? "bg-[rgb(167,146,119)]"
               : "bg-[rgba(167,146,119,0.2)]"
-          }`}
+          } hover:scale-105`}
         >
           <div className="flex items-center space-x-2">
             <QrcodeIcon
@@ -294,7 +269,7 @@ function App() {
           </div>
           <span
             className={`rounded-full w-4 h-4 border ${
-              selectedMethod === "Qris" ? "bg-white " : ""
+              selectedMethod === "Qris" ? "bg-white" : ""
             }`}
           ></span>
         </button>
@@ -308,11 +283,11 @@ function App() {
         {/* Pilihan Offline */}
         <button
           onClick={() => handleJenispesanan("Offline")}
-          className={`w-full flex items-center justify-between p-4 rounded-lg mb-2 ${
+          className={`w-full flex items-center justify-between p-4 rounded-lg mb-2 transform transition-all duration-300 ease-in-out ${
             jenispesanan === "Offline"
               ? "bg-[rgb(167,146,119)]"
               : "bg-[rgba(167,146,119,0.2)]"
-          }`}
+          } hover:scale-105`}
         >
           <div className="flex items-center space-x-2">
             <i
@@ -338,11 +313,11 @@ function App() {
         {/* Pilihan Online */}
         <button
           onClick={() => handleJenispesanan("Online")}
-          className={`w-full flex items-center justify-between p-4 rounded-lg ${
+          className={`w-full flex items-center justify-between p-4 rounded-lg transform transition-all duration-300 ease-in-out ${
             jenispesanan === "Online"
               ? "bg-[rgb(167,146,119)]"
               : "bg-[rgba(167,146,119,0.2)]"
-          }`}
+          } hover:scale-105`}
         >
           <div className="flex items-center space-x-2">
             <i
@@ -360,7 +335,7 @@ function App() {
           </div>
           <span
             className={`rounded-full w-4 h-4 border ${
-              jenispesanan === "Online" ? "bg-white " : ""
+              jenispesanan === "Online" ? "bg-white" : ""
             }`}
           ></span>
         </button>
@@ -385,7 +360,7 @@ function App() {
       <div className="w-full max-w-xs sm:max-w-md mt-4">
         <button
           onClick={handleAlert}
-          className="w-full bg-[#A79277] text-white py-2 rounded-lg font-semibold"
+          className="w-full bg-[#A79277] text-white py-2 rounded-lg font-semibold transform transition-all duration-300 ease-in-out hover:scale-105"
         >
           Bayar
         </button>
@@ -404,14 +379,14 @@ function App() {
             </h2>
             <div className="flex justify-center mt-6 space-x-4">
               <button
-                onClick={() => setShowAlert(false)} // Tutup pop-up
-                className="bg-gray-300 text-black font-semibold rounded-lg py-2 px-4 hover:bg-gray-400"
+                onClick={() => setShowAlert(false)}
+                className="bg-[rgba(167,146,119,0.2)] text-black font-semibold rounded-lg py-2 px-4 hover:scale-105 transform transition duration-300"
               >
                 Tidak
               </button>
               <button
-                onClick={handlePayment} // Lakukan pembayaran
-                className="bg-[#A79277] text-white font-semibold rounded-lg py-2 px-4 hover:bg-[#625545]"
+                onClick={handlePayment}
+                className="bg-[#A79277] text-white font-semibold rounded-lg py-2 px-4 hover:scale-105 transform transition duration-300"
               >
                 Iya
               </button>
@@ -429,13 +404,13 @@ function App() {
             <div className="flex space-x-4 mt-4">
               <button
                 onClick={handleCloseBayar}
-                className="bg-gray-300 py-2 px-4 rounded"
+                className="bg-[rgba(167,146,119,0.2)] py-2 px-4 rounded hover:scale-105 transform transition duration-300"
               >
                 Kembali ke Menu
               </button>
               <button
                 onClick={handleScanSatisfaction}
-                className="bg-[#A79277] text-white py-2 px-4 rounded"
+                className="bg-[#A79277] text-white py-2 px-4 rounded hover:scale-105 transform transition duration-300"
               >
                 Scan Kepuasan
               </button>
@@ -456,7 +431,7 @@ function App() {
             ></video>
             <button
               onClick={handleScan}
-              className="bg-[#A79277] text-white font-semibold py-3 px-6 rounded-lg text-lg hover:bg-[#8B6F61]"
+              className="bg-[#A79277] text-white font-semibold py-3 px-6 rounded-lg text-lg hover:bg-[#8B6F61] hover:scale-105 transform transition duration-300"
             >
               Mulai Scan
             </button>
@@ -471,9 +446,7 @@ function App() {
           <div className="bg-white p-8 rounded-lg shadow-lg flex flex-col items-center w-[90%] sm:w-[80%] md:max-w-lg">
             <div className="flex flex-col items-center">
               <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-[#A79277]"></div>
-              <p className=" mt-4 text-lg">
-                Memproses, harap tunggu...
-              </p>
+              <p className=" mt-4 text-lg">Memproses, harap tunggu...</p>
             </div>
           </div>
         </div>
@@ -507,13 +480,13 @@ function App() {
             <div className="flex space-x-4 mt-4">
               <button
                 onClick={handleCloseScan}
-                className="bg-gray-300 py-2 px-4 rounded"
+                className="bg-[rgba(167,146,119,0.2)] py-2 px-4 rounded hover:scale-105 transform transition duration-300"
               >
                 Kembali ke Menu
               </button>
               <button
                 onClick={handleScanSatisfaction}
-                className="bg-[#A79277] text-white py-2 px-4 rounded"
+                className="bg-[#A79277] text-white py-2 px-4 rounded hover:scale-105 transform transition duration-300"
               >
                 Scan Ulang
               </button>
@@ -535,13 +508,13 @@ function App() {
             <div className="flex space-x-4 mt-4">
               <button
                 onClick={handleCloseScan}
-                className="bg-gray-300 py-2 px-4 rounded"
+                className="bg-[rgba(167,146,119,0.2)] py-2 px-4 rounded hover:scale-105 transform transition duration-300"
               >
                 Kembali ke Menu
               </button>
               <button
                 onClick={handleScanSatisfaction}
-                className="bg-[#A79277] text-white py-2 px-4 rounded"
+                className="bg-[#A79277] text-white py-2 px-4 rounded hover:scale-105 transform transition duration-300"
               >
                 Scan Ulang
               </button>

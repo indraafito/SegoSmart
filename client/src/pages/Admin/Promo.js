@@ -2,14 +2,15 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import LoginValidation from "./components/LoginValidation";
 import axios from "axios";
+import AOS from "aos";
+import "aos/dist/aos.css";
 
-
+AOS.init({ duration: 400, once: true });
 const App = () => {
   const navigate = useNavigate();
   const publicUrl = process.env.PUBLIC_URL;
   const apiUrl = process.env.REACT_APP_API_URL
 
-  // Menu items state
   const [menuItems, setMenuItems] = useState([]);
   const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
@@ -36,14 +37,12 @@ const App = () => {
     }
     fetchData();
   },[apiUrl]);
-  // Handle back navigation
   const handleBackClick = () => {
     navigate("/Profil");
   };
 
-  // Handle delete item
   const handleDeleteClick = (id) => {
-    setItemToDelete(id); // set the promo ID to delete
+    setItemToDelete(id); 
     setDeleteModalOpen(true);
   };
 
@@ -52,20 +51,17 @@ const App = () => {
       `${apiUrl}/Promo/hapusPromo/${itemToDelete}`
     );
     if (response.data.success) {
-      setMenuItems(menuItems.filter((item) => item.id !== itemToDelete)); // filter based on promo id
+      setMenuItems(menuItems.filter((item) => item.id !== itemToDelete)); 
       setDeleteModalOpen(false);
     } else {
       console.error("Error deleting promo");
     }
   };
 
-
-  // Handle view item (navigate to promo page)
   const handleViewClick = (id) => {
     navigate(`/infopromo/${id}`);
   };
 
-  // Handle adding new menu
   const handleAddpromoClick = () => {
     navigate("/tambahpromo");
   };
@@ -93,13 +89,13 @@ const App = () => {
         {/* Button container */}
         <div className="flex flex-row item-center justify-center w-full mt-2 space-x-[4px]">
           <button
-            className="bg-gray-400 text-white px-[5px] py-[2px] rounded-full flex items-center text-[8px] sm:text-[12px]"
+            className="bg-gray-400 text-white px-[5px] py-[2px] rounded-full flex items-center text-[8px] sm:text-[12px] hover:scale-105 transform transition duration-300"
             onClick={() => onView(id)}
           >
             Lihat <i className="fas fa-eye ml-[3px] text-[8px]"></i>
           </button>
           <button
-            className="bg-red-500 text-white px-[5px] py-[2px] rounded-full flex items-center text-[8px] sm:text-[12px]"
+            className="bg-red-500 text-white px-[5px] py-[2px] rounded-full flex items-center text-[8px] sm:text-[12px] hover:scale-105 transform transition duration-300"
             onClick={() => onDelete(id)}
           >
             Hapus <i className="fas fa-trash ml-[3px] text-[8px]"></i>
@@ -130,7 +126,7 @@ const App = () => {
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">Daftar Promo</h2>
         <button
-          className="bg-[#A79277] text-white px-3 py-1 rounded-full flex items-center"
+          className="bg-[#A79277] text-white px-3 py-1 rounded-full flex items-center hover:scale-105 transform transition duration-300"
           onClick={handleAddpromoClick}
         >
           Tambah Promo <i className="fas fa-plus ml-2"></i>

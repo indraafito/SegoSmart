@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
 import Footer from "./components/Footer";
 import LoginValidation from "./components/LoginValidation";
 import axios from "axios";
+import AOS from "aos";
+import "aos/dist/aos.css";
 const Homepage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [makanan, setMakanan] = useState([]);
@@ -15,6 +16,7 @@ const Homepage = () => {
   const apiUrl = process.env.REACT_APP_API_URL;
 
   useEffect(() => {
+    AOS.init({ duration: 1000, once: true });
     async function fetchingData() {
       const daftarMakanan = await axios.get(
         `${apiUrl}/Menu/tampilMenu/perKategori/makanan`
@@ -52,11 +54,10 @@ const Homepage = () => {
     }
   }, [popup]);
 
-
   const handleOrderNowClick = () => {
     navigate("/cari");
   };
-   
+
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
@@ -65,12 +66,10 @@ const Homepage = () => {
   };
 
   const renderItem = (img, name, price, stok, index, id) => (
-    <motion.div
+    <div
+      data-aos="slide-right"
       key={index}
-      className="bg-[rgba(167,146,119,0.2)] p-2 rounded-lg relative w-40 sm:w-48 md:w-56 flex-shrink-0 mb-5"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ delay: 0.5 + index * 0.3, duration: 0.2 }}
+      className="bg-[rgba(167,146,119,0.2)] p-2 rounded-lg relative w-40 sm:w-48 md:w-56 flex-shrink-0 mb-5 shadow-lg"
     >
       <img
         src={publicUrl + "/images/menu/" + img}
@@ -83,19 +82,20 @@ const Homepage = () => {
         {stok}
       </div>
       <button
-  className="absolute bottom-2 right-2 bg-[#A79277] text-white p-0 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ease-in-out transform hover:bg-[#c3a37a] active:scale-95 active:bg-[#d4b48b] active:shadow-lg"
-  onClick={() => addKeranjang(id)}
->
-  <i className="fas fa-shopping-cart"></i>
-</button>
-
-
-    </motion.div>
+        className="absolute bottom-2 right-2 bg-[#A79277] text-white p-0 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ease-in-out transform hover:bg-[#c3a37a] hover:scale-110 active:scale-95 active:bg-[#d4b48b] active:shadow-lg"
+        onClick={() => addKeranjang(id)}
+      >
+        <i className="fas fa-shopping-cart"></i>
+      </button>
+    </div>
   );
 
   const renderPromo = (title, discount, image, id, index) => (
     <Link to={`/Infopromo/${id}`} key={index}>
-      <div className="bg-gradient-to-r from-[rgba(0,0,0)] to-[rgba(167,146,119)] rounded-3xl p-4 flex items-center justify-between w-80 h-40">
+      <div
+        data-aos="slide-left"
+        className="bg-gradient-to-r from-[rgba(0,0,0)] to-[rgba(167,146,119)] rounded-3xl p-4 flex items-center justify-between w-80 h-40 shadow-lg"
+      >
         <div className="text-white flex flex-col justify-center">
           <div className="text-lg font-bold">{title}</div>
           <div className="text-4xl font-bold">{discount}%</div>
@@ -127,7 +127,6 @@ const Homepage = () => {
           type: "success",
         });
 
-        // Update stok lokal
         setMakanan((prevMakanan) =>
           prevMakanan.map((item) =>
             item.id_menu === idmenu && item.stok > 0
@@ -153,7 +152,6 @@ const Homepage = () => {
     }
   };
 
-
   const formatRupiah = (number) => {
     return new Intl.NumberFormat("id-ID", {
       style: "currency",
@@ -162,16 +160,16 @@ const Homepage = () => {
   };
 
   return (
-    <motion.div
-      className="max-w-full mx-auto min-h-screen pb-20 px-4 sm:px-10 "
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-    >
-      <motion.header className="sticky top-0 bg-white z-50 p-2 flex flex-col items-center">
+    <div className="max-w-full mx-auto min-h-screen pb-20">
+      <header
+        data-aos="slide-right"
+        className="sticky top-0 bg-white bg-opacity-80 backdrop-blur-lg z-50 p-2 flex flex-col items-center"
+      >
         <div className="w-full max-w-2xl flex flex-col items-center">
-          <h1 className="text-2xl font-bold text-left w-full">Pilih</h1>
-          <h1 className="text-2xl font-bold text-left w-full">
+          <h1 className="text-2xl font-bold text-left w-full hover:animate-pulse">
+            Pilih
+          </h1>
+          <h1 className="text-2xl font-bold text-left w-full hover:animate-pulse">
             Makanan <span className="text-[#A79277]">Favoritmu</span>
           </h1>
         </div>
@@ -183,19 +181,20 @@ const Homepage = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Cari"
-              className="w-full p-2 pl-10 rounded-full bg-[rgba(167,146,119,0.2)] text-gray-500 focus:outline-none focus:ring-0"
+              className="w-full p-2 pl-10 rounded-full bg-[rgba(167,146,119,0.2)] text-gray-500 focus:outline-none focus:ring-0 transition-colors duration-300 hover:bg-[rgba(136,121,103,0.3)]"
             />
-            <i className="fas fa-search absolute left-3 top-3 text-gray-500"></i>
+            <i className="fas fa-search absolute left-3 top-3 text-gray-500 transition-transform transform hover:scale-110 hover:text-gray-700"></i>
           </form>
+
           <button
-            onClick={handleOrderNowClick} // Tambahkan fungsi handler sesuai kebutuhan
-            className="ml-2 px-4 py-2 rounded-full bg-[#A79277] text-white font-semibold focus:outline-none"
+            onClick={handleOrderNowClick}
+            className="ml-2 px-4 py-2 rounded-full bg-[#A79277] text-white font-semibold focus:outline-none transition-transform transform hover:scale-105 hover:bg-[#8a6b5d]"
           >
             Order Now
           </button>
         </div>
-      </motion.header>
-      <motion.div className="mb-4 px-2 ">
+      </header>
+      <div className="mb-4 px-2 ">
         <div
           className="flex overflow-x-auto overflow-hidden space-x-4 "
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
@@ -210,7 +209,7 @@ const Homepage = () => {
             )
           )}
         </div>
-      </motion.div>
+      </div>
 
       <section className="mb-4 px-2">
         <div className="flex justify-between items-center mb-2">
@@ -276,7 +275,7 @@ const Homepage = () => {
 
       <Footer />
       <LoginValidation />
-    </motion.div>
+    </div>
   );
 };
 

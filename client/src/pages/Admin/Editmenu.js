@@ -3,6 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import axios from "axios";
+import AOS from "aos";
+import "aos/dist/aos.css";
 
 function App() {
   const navigate = useNavigate();
@@ -21,6 +23,7 @@ function App() {
     navigate("/kelolamenu");
   }
   useEffect(() => {
+    AOS.init({ duration: 400, once: true });
     async function fetchingData() {
       const menulist = await axios.get(
         `${apiUrl}/Menu/tampilMenu/Byid/${id_menu}`
@@ -60,7 +63,6 @@ function App() {
         "fileType",
         "File yang diunggah harus berupa gambar",
         (value) => {
-        // Jika gambar tidak diganti, lewati validasi
         if (!value) return true;
         return value && value.type && value.type.startsWith("image/");
       }
@@ -78,9 +80,8 @@ function App() {
 
   const onSubmit = async (data) => {
     try {
-      // Perbarui data menu
       const menuUpdate = await axios.post(`${apiUrl}/Menu/editMenu`, {
-        id_menu: menu.id_menu, // Pastikan ID menu dikirimkan
+        id_menu: menu.id_menu,
         nama_menu: data.nama_menu,
         harga: data.harga,
         stok: data.stok,
@@ -93,7 +94,6 @@ function App() {
       if (menuUpdate.data.error) {
         console.log("Error updating menu:", menuUpdate.data.error);
       } else {
-        // Jika ada file gambar baru yang harus diunggah
         if (prevGambar !== gambar) {
           const deleteGambar = await axios.post(`${apiUrl}/uploadGambar/Menu/deleteGambar`,{fileUrl: prevGambar.name});
           if(!deleteGambar.data.error){
@@ -116,7 +116,6 @@ function App() {
           }
 
         }
-        // Jika berhasil
         setSuccess(true);
         console.log("Menu successfully updated!");
       }
@@ -130,7 +129,7 @@ function App() {
     <div className="container mx-auto p-4 rounded-lg relative">
       <div className="absolute left-4 top-4 z-10">
         <button
-          className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center cursor-pointer"
+          className="w-10 h-10 bg-[rgba(167,146,119,0.2)] rounded-full flex items-center justify-center cursor-pointer hover:scale-105 transform transition duration-300"
           onClick={handleBackClick}
         >
           <i className="fas fa-chevron-left"></i>
@@ -292,7 +291,7 @@ function App() {
               <div className="flex justify-end mt-6 space-x-2">
                 <button
                   type="submit"
-                  className="bg-[#a79277] text-white py-2 px-4 rounded"
+                  className="bg-[#a79277] text-white py-2 px-4 rounded hover:scale-105 transform transition duration-300"
                 >
                   Update Menu
                 </button>

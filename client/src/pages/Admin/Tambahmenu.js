@@ -7,7 +7,10 @@ import {
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup"
 import axios from "axios";
+import AOS from "aos";
+import "aos/dist/aos.css";
 
+AOS.init({ duration: 1000, once: true });
 function App() {
   const navigate = useNavigate();
   const [gambar, setGambar] = useState(null);
@@ -63,7 +66,6 @@ function App() {
         gambar: data.gambar.name,
       });
 
-      // Tambahkan log untuk memeriksa data respon
       if (menu.data.error) {
         setError(menu.data.error);
       } else {
@@ -86,7 +88,7 @@ function App() {
       }
     } catch (err) {
       console.error("Error during submission:", err);
-      setError(true); // Pastikan error ditangani jika ada masalah API
+      setError(true); 
     }
 
     setGambar(false);
@@ -97,7 +99,7 @@ function App() {
     <div className="container mx-auto p-4 rounded-lg relative">
       <div className="absolute left-4 top-4 z-10">
         <button
-          className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center cursor-pointer"
+          className="w-10 h-10 bg-[rgba(167,146,119,0.2)] rounded-full flex items-center justify-center cursor-pointer hover:scale-105 transform transition duration-300"
           onClick={handleBackClick}
         >
           <i className="fas fa-chevron-left"></i>
@@ -133,7 +135,7 @@ function App() {
             <button
               onClick={() => {
                 setError(false);
-                window.location.reload(); // Refresh halaman setelah menutup popup
+                window.location.reload(); 
               }}
               className="mt-6 bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
             >
@@ -284,7 +286,7 @@ function App() {
 
             <div className="flex justify-end mt-6 space-x-2">
               <button
-                className="px-2 py-1 sm:px-3 sm:py-2 bg-green-500 text-white rounded-md"
+                className="px-2 py-1 sm:px-3 sm:py-2 bg-[#A79277] text-white rounded-md hover:scale-105 transform transition duration-300"
                 type="submit"
               >
                 Tambah Menu

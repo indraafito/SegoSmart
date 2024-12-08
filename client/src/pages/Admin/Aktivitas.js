@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { motion } from "framer-motion";
 import LoginValidation from "./components/LoginValidation";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 import axios from "axios";
+import AOS from "aos";
+import "aos/dist/aos.css";
 
 const App = () => {
   const [searchParams] = useSearchParams();
@@ -22,6 +23,7 @@ const App = () => {
   const apiUrl = process.env.REACT_APP_API_URL;
 
   useEffect(() => {
+    AOS.init({ duration: 1000, once: true });
     async function fetchingData() {
       let riwayatList = null;
       if (from && to) {
@@ -64,17 +66,17 @@ const App = () => {
 
       const menus = responsesMenu.map((responseArray) =>
         responseArray
-          .filter((response) => response.data) // Hanya data yang valid
+          .filter((response) => response.data)
           .map((response) => response.data)
       );
 
       const riwayats = riwayatList.data.map((item, index) => {
-        const itemMenus = items[index] || []; // Ensure items[index] is valid
-        const menuDetails = menus[index] || []; // Ensure menus[index] is valid
+        const itemMenus = items[index] || [];
+        const menuDetails = menus[index] || [];
         return {
           ...item,
-          item: itemMenus.filter(Boolean), // Filter out null items
-          menu: menuDetails.filter(Boolean), // Filter out null menus
+          item: itemMenus.filter(Boolean),
+          menu: menuDetails.filter(Boolean),
         };
       });
       setRiwayats(riwayats);
@@ -122,56 +124,109 @@ const App = () => {
   };
 
   const formatDateTime = (mysqlDatetime) => {
-    const date = new Date(mysqlDatetime); // Ubah ke objek Date
+    const date = new Date(mysqlDatetime);
     const options = {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
       hour: "2-digit",
       minute: "2-digit",
-      hour12: false, // Gunakan format 24 jam
+      hour12: false,
     };
     return new Intl.DateTimeFormat("id-ID", options).format(date);
   };
 
   const handlePrintToPDF = () => {
-    const doc = new jsPDF("p", "mm", "a4");
+    const doc = new jsPDF("p", "mm", "a3");
     let y = 10;
   
-    // Tambahkan Judul
+    doc.setFont("calibri", "normal");
+  
     doc.setFontSize(18);
-    doc.setFont("helvetica", "bold");
-    doc.text("Laporan Aktivitas", 105, y, { align: "center" });
+    doc.setFont("calibri", "bold");
+    doc.text("Laporan Aktivitas", 148.5, y, { align: "center" });
     y += 15;
   
-    // Tampilkan Total Harga dan Rata-rata Rating
+    const totalTransaksi = riwayats.length;
+    const grandTotalHarga = riwayats.reduce((total, riwayat) => total + riwayat.total_harga, 0);
+  
+    const menuCounts = riwayats.flatMap((riwayat) =>
+      riwayat.item.map((item, index) => ({
+        namaMenu: riwayat.menu[index]?.nama_menu || "-",
+        jumlah: item.jumlah,
+      }))
+    ).reduce((acc, item) => {
+      acc[item.namaMenu] = (acc[item.namaMenu] || 0) + item.jumlah;
+      return acc;
+    }, {});
+  
+    const menuPalingPopuler = Object.entries(menuCounts).sort((a, b) => b[1] - a[1])[0] || ["-", 0];
+  
+    const rataRataPendapatan = grandTotalHarga / totalTransaksi;
+  
+    const uniqueDates = [...new Set(riwayats.map((riwayat) => formatDateTime(riwayat.createdAt, "yyyy-MM-dd")))];
+const rataRataPendapatanPerHari = grandTotalHarga / uniqueDates.length;
+
+const monthlyTotals = riwayats.reduce((acc, riwayat) => {
+  const monthYear = formatDateTime(riwayat.createdAt, "yyyy-MM");
+  acc[monthYear] = (acc[monthYear] || 0) + riwayat.total_harga;
+  return acc;
+}, {});
+
+const rataRataPendapatanPerBulan = 
+  Object.values(monthlyTotals).reduce((sum, total) => sum + total, 0) / Object.keys(monthlyTotals).length;
+
+  
+    const uniqueYears = [...new Set(riwayats.map((riwayat) => new Date(riwayat.createdAt).getFullYear()))];
+    const rataRataPendapatanPerTahun = grandTotalHarga / uniqueYears.length;
+  
     doc.setFontSize(12);
-    doc.setFont("helvetica", "normal");
-    doc.text(`Total Harga: ${formatRupiah(totalHarga)}`, 10, y);
+    doc.setFont("calibri", "normal");
+    doc.text(`Total Transaksi: ${totalTransaksi}`, 10, y);
     y += 8;
-    doc.text(`Rata-rata Rating: ${averageRating.toFixed(1)} / 5`, 10, y);
+    doc.text(`Total Penjualan: ${formatRupiah(grandTotalHarga)}`, 10, y);
+    y += 8;
+    doc.text(`Menu Paling Populer: ${menuPalingPopuler[0]} (${menuPalingPopuler[1]} kali dipesan)`, 10, y);
+    y += 8;
+    doc.text(`Rata-rata Pendapatan per Transaksi: ${formatRupiah(rataRataPendapatan)}`, 10, y);
+    y += 8;
+    doc.text(`Rata-rata Pendapatan per Hari: ${formatRupiah(rataRataPendapatanPerHari)}`, 10, y);
+    y += 8;
+    doc.text(`Rata-rata Pendapatan per Bulan: ${formatRupiah(rataRataPendapatanPerBulan)}`, 10, y);
+    y += 8;
+    doc.text(`Rata-rata Pendapatan per Tahun: ${formatRupiah(rataRataPendapatanPerTahun)}`, 10, y);
     y += 15;
   
-    // Siapkan Data untuk Tabel
+    let printedRiwayatIds = [];
+  
     const tableData = riwayats.flatMap((riwayat, index) =>
       riwayat.item.map((item, itemIndex) => {
         const menu = riwayat.menu[itemIndex];
-        return [
-          `${index + 1}-${itemIndex + 1}`, // No
-          formatDateTime(riwayat.createdAt), // Tanggal
-          menu?.nama_menu || "-", // Nama Menu
-          item.jumlah, // Jumlah
-          formatRupiah(item.sub_total), // Subtotal
-          formatRupiah(
-            item.sub_total - (item.sub_total * item.diskon) / 100
-          ), // Harga Awal
-          item.diskon + "%", // Total Diskon
-          formatRupiah(riwayat.total_harga), // Total Harga
-        ];
+  
+        let shouldPrintDateAndTotal = true;
+        if (printedRiwayatIds.includes(riwayat.id)) {
+          shouldPrintDateAndTotal = false;
+        } else {
+          printedRiwayatIds.push(riwayat.id);
+        }
+  
+        const dateText = shouldPrintDateAndTotal ? formatDateTime(riwayat.createdAt) : "";
+        const totalHargaText = shouldPrintDateAndTotal ? formatRupiah(riwayat.total_harga) : "";
+  
+        return {
+          no: `${index + 1}-${itemIndex + 1}`,
+          date: dateText,
+          menuName: menu?.nama_menu || "-",
+          jumlah: item.jumlah,
+          subTotal: formatRupiah(item.sub_total),
+          priceBeforeDiscount: formatRupiah(item.sub_total - (item.sub_total * item.diskon) / 100),
+          discount: item.diskon + "%",
+          totalPrice: totalHargaText,
+          shouldPrintDateAndTotal,
+        };
       })
     );
   
-    // Tambahkan Tabel
     doc.autoTable({
       head: [
         [
@@ -185,45 +240,68 @@ const App = () => {
           "Total Harga",
         ],
       ],
-      body: tableData,
+      body: tableData.map((row) => [
+        row.no,
+        row.shouldPrintDateAndTotal ? row.date : "",
+        row.menuName,
+        row.jumlah,
+        row.subTotal,
+        row.priceBeforeDiscount,
+        row.discount,
+        row.shouldPrintDateAndTotal ? row.totalPrice : "",
+      ]),
+      foot: [
+        [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "Total Keseluruhan",
+          formatRupiah(grandTotalHarga),
+        ],
+      ],
       startY: y,
       styles: {
-        fontSize: 11, // Sesuaikan ukuran font
-        cellPadding: 5, // Padding sesuai desain Tailwind
-        font: "helvetica",
-        valign: "middle", // Vertikal rata tengah
-        halign: "center", // Horizontal rata tengah
-        lineColor: [229, 231, 235], // Warna abu-abu Tailwind
-        lineWidth: 0.5, // Ketebalan garis
+        fontSize: 11,
+        font: "calibri",
+        cellPadding: 5,
+        valign: "middle",
+        halign: "center",
+        lineColor: [229, 231, 235],
+        lineWidth: 0.5,
       },
       headStyles: {
-        fillColor: [15, 23, 42], // Warna biru tua Tailwind (bg-gray-900)
-        textColor: [255, 255, 255], // Warna putih untuk teks header
+        fillColor: [15, 23, 42],
+        textColor: [255, 255, 255],
         fontStyle: "bold",
       },
       alternateRowStyles: {
-        fillColor: [240, 240, 240], // Warna abu-abu terang Tailwind (bg-gray-100)
+        fillColor: [240, 240, 240],
+      },
+      footStyles: {
+        fillColor: [15, 23, 42],
+        textColor: [255, 255, 255],
+        fontStyle: "bold",
       },
       tableLineWidth: 0.25,
       tableLineColor: [229, 231, 235],
     });
   
-    // Simpan PDF
     doc.save("Laporan_Aktivitas.pdf");
   };
   
-  
+
   return (
-    <motion.div className="flex flex-col min-h-screen max-w-md mx-auto p-4 sm:p-6 md:p-8 lg:max-w-3xl">
-      <motion.div
+    <div className="flex flex-col min-h-screen max-w-md mx-auto p-4 sm:p-6 md:p-8 lg:max-w-3xl">
+      <div
+        data-aos="slide-down"
         className="fixed top-0 left-0 w-full pb-2 z-40 bg-white"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 1 }}
       >
         <div className="flex items-center justify-between w-full">
           <button
-            className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center cursor-pointer mt-4 ml-4"
+            className="w-10 h-10 bg-[rgba(167,146,119,0.2)] rounded-full flex items-center justify-center cursor-pointer mt-4 ml-4 hover:scale-105 transform transition duration-300"
             onClick={handleBackClick}
           >
             <i className="fas fa-chevron-left"></i>
@@ -232,12 +310,7 @@ const App = () => {
             Aktivitas
           </h1>
         </div>
-        <motion.div
-          className="mt-4 flex justify-center space-x-4"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5, duration: 1 }}
-        >
+        <div className="mt-4 flex justify-center space-x-4">
           <div>
             <label
               htmlFor="dateFrom"
@@ -269,38 +342,30 @@ const App = () => {
             />
           </div>
           <button
-            class="flex items-center px-4 py-2 bg-[#A79277] text-white rounded-lg shadow hover:bg-[#504540]"
+            className="flex items-center px-4 py-2 bg-[#A79277] text-white rounded-lg shadow hover:scale-105 transform transition duration-300"
             onClick={handleFilter}
           >
-            <i class="fas fa-search"></i>
+            <i className="fas fa-search"></i>
           </button>
           <button
-            className="bg-[#A79277] text-white px-4 py-2 rounded-lg flex items-center justify-center"
+            className="bg-[#A79277] text-white px-4 py-2 rounded-lg flex items-center justify-center hover:scale-105 transform transition duration-300"
             onClick={handlePrintToPDF}
           >
-            <i className="fas fa-print mr-2"></i>
+            <i className="fas fa-print"></i>
           </button>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
-      <motion.div
-        className="flex-grow pt-2"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1, duration: 1 }}
-      >
-        <div className="mt-20 ">
+      <div data-aos="slide-up" className="flex-grow pt-2">
+        <div className="mt-20">
           <div className="space-y-4 pb-24">
             {riwayats.map((riwayat, index) => (
-              <motion.div
+              <div
                 key={index}
-                className={`bg-gray-200 p-4 rounded-lg flex sm:p-6 cursor-pointer ${
+                className={`bg-[rgba(167,146,119,0.2)] p-4 rounded-lg flex sm:p-6 cursor-pointer ${
                   index === riwayats.length - 1 ? "mb-4" : ""
                 }`}
                 onClick={() => handleItemClick(riwayat)}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.2 * index, duration: 0.6 }}
               >
                 <img
                   src={
@@ -320,7 +385,7 @@ const App = () => {
                             ? `${m.nama_menu}, `
                             : `${m.nama_menu}.`;
                         }
-                        return null; // Skip if menu is null or doesn't have nama_menu
+                        return null;
                       })}
                   </h2>
 
@@ -345,20 +410,15 @@ const App = () => {
                     ))}
                   </div>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
-      </motion.div>
+      </div>
 
-      <motion.div
-        className="fixed bottom-0 left-0 right-0 mx-auto sm:w-[calc(100%-2rem)] max-w-3xl pt-2 pb-4 z-40 bg-white"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.5, duration: 1 }}
-      >
+      <div className="fixed bottom-0 left-0 right-0 mx-auto sm:w-[calc(100%-2rem)] max-w-3xl pt-2 pb-4 z-40 bg-white">
         <div className="space-y-2">
-          <p className="font-bold text-sm sm:text-base bg-[#D9D9D9] p-2 rounded">
+          <p className="font-bold text-sm sm:text-base bg-[rgba(167,146,119,0.2)] p-2 rounded">
             Rata-rata rating
             <span className="text-yellow-500">
               {Array.from({ length: 5 }, (_, i) => (
@@ -371,19 +431,17 @@ const App = () => {
               ))}
             </span>
           </p>
-          <p className="font-bold text-sm sm:text-base bg-[#D9D9D9] p-2 rounded">
+          <p className="font-bold text-sm sm:text-base bg-[rgba(167,146,119,0.2)] p-2 rounded">
             Total {formatRupiah(totalHarga)}
           </p>
         </div>
-      </motion.div>
+      </div>
       {isPopupVisible && selectedItem && (
         <div className="fixed inset-0 flex items-center justify-center">
           <div className="bg-white p-6 rounded-lg shadow-lg w-96 relative">
-            {/* ID Riwayat di Pojok Kiri */}
             <div className="absolute top-4 left-4 text-sm font-bold">
               {selectedItem.id}
             </div>
-            {/* Tombol Tutup */}
             <button
               className="absolute top-4 right-4 text-gray-500"
               onClick={closePopup}
@@ -425,7 +483,7 @@ const App = () => {
       )}
 
       <LoginValidation />
-    </motion.div>
+    </div>
   );
 };
 

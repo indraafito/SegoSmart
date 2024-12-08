@@ -13,7 +13,6 @@ const Homepage = () => {
   const apiUrl = process.env.REACT_APP_API_URL;
 
   useEffect(() => {
-    // Initialize AOS
     AOS.init({ duration: 1000, once: true });
 
     async function fetchingData() {
@@ -34,7 +33,7 @@ const Homepage = () => {
             .get(`${apiUrl}/Menu/tampilMenu/Byid/${item.id_menu}`)
             .catch((err) => {
               console.error(err);
-              return null; // Handle error and return null to avoid Promise.all failure
+              return null;
             });
         });
 
@@ -70,7 +69,7 @@ const Homepage = () => {
     <Link to={`/Infomenu/${name}`} key={index}>
       <div
         key={index}
-        data-aos="slide-right" // Apply fade-up animation on scroll
+        data-aos="slide-up"
         className="bg-[rgba(167,146,119,0.2)] p-2 rounded-lg relative w-40 sm:w-48 md:w-56 flex-shrink-0 mb-5"
       >
         <img
@@ -88,7 +87,7 @@ const Homepage = () => {
     <Link to={`/Infopromo/${id}`} key={index}>
       <div
         key={index}
-        data-aos="slide-left" // Apply zoom-in animation on scroll
+        data-aos="slide-down"
         className="bg-gradient-to-r from-[rgba(0,0,0)] to-[rgba(167,146,119)] rounded-3xl p-4 flex items-center justify-between w-80 h-40"
       >
         <div className="text-white flex flex-col justify-center">
@@ -115,7 +114,7 @@ const Homepage = () => {
 
   return (
     <div className="max-w-full mx-auto min-h-screen ">
-      <header className="sticky top-0 bg-white z-50 p-2 flex flex-col items-center">
+      <header className="sticky top-0 bg-white bg-opacity-80 backdrop-blur-lg z-50 p-2 flex flex-col items-center">
         <div className="w-full max-w-2xl flex flex-col items-center">
           <h1 className="text-2xl font-bold text-left w-full">Pilih</h1>
           <h1 className="text-2xl font-bold text-left w-full">
@@ -144,7 +143,7 @@ const Homepage = () => {
         <div className="container mx-auto flex flex-col md:flex-row items-center justify-center px-4 sm:px-8 md:px-16">
           <div className="text-left mx-auto md:mr-8 md:ml-16 w-full">
             <h1 className="text-5xl sm:text-4xl md:text-6xl font-bold text-[#000]">
-              Welcome to{" "}
+              Selamat Datang di{" "}
             </h1>
             <h1 className="text-5xl sm:text-4xl md:text-6xl font-bold text-[#A79277]">
               Sego Resek
@@ -157,7 +156,7 @@ const Homepage = () => {
 
             <button
               onClick={() => (window.location.href = "/menup")}
-              className="mt-5 ml-0 px-4 py-2 rounded-full bg-[#A79277] text-white font-semibold focus:outline-none"
+              className="mt-5 ml-0 px-4 py-2 rounded-full bg-[#A79277] text-white font-semibold focus:outline-none hover:scale-105 transform transition duration-300 bg-gradient-to-r from-[#A79277] to-[#625545] hover:bg-gradient-to-r hover:animate-gradientHover"
             >
               Menu Kami
             </button>
@@ -176,11 +175,11 @@ const Homepage = () => {
         data-aos="fade-up"
         className="text-center py-8 bg-gradient-to-b from-[rgba(167,146,119,0.2)] to-white"
       >
-        <div className="container mx-auto flex flex-col sm:flex-row items-center justify-center px-8 sm:px-32">
+        <div className="container mx-auto flex flex-col md:flex-row items-center justify-center px-4 sm:px-8 md:px-16">
           <img
             src={`${publicUrl}/images/menu/Sego Resek Jingkrak Hitam.png`}
             alt="Hien Bowl"
-            className="w-3/4 sm:w-1/3 mb-4 sm:mb-0 sm:mr-8"
+            className="w-3/4 sm:w-2/3 mb-4 sm:mb-0 sm:mr-8"
           />
           <div className="w-full sm:w-2/3 text-left">
             <h2 className="text-4xl font-bold text-[#A79277]">Tentang Kami</h2>
@@ -262,7 +261,7 @@ const Homepage = () => {
               <p className="font-bold text-sm mb-2">Contact Us</p>
               <div className="flex items-center space-x-2 text-xs">
                 <i className="fas fa-map-marker-alt"></i>
-                <p>Jl. Terusan Surabaya No.08, Sumbersari</p>
+                <p>Jl. Terusan Surabaya No.08</p>
               </div>
               <div className="flex items-center space-x-2 mt-1 text-xs">
                 <i className="fab fa-instagram"></i>
@@ -275,8 +274,10 @@ const Homepage = () => {
             </div>
           </div>
 
-          {/* Peta Lokasi di kanan */}
-          <div className="mt-4 sm:mt-0 flex justify-end sm:w-1/2">
+          <div
+            data-aos="zoom-in"
+            className="mt-4 sm:mt-0 flex justify-end sm:w-1/2"
+          >
             <iframe
               src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d31321.808425838626!2d112.59715557065893!3d-7.9666125200040385!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e7883eaa135f695%3A0xe5d4a66b051dfae!2sSego%20Resek%20Terusan%20Surabaya!5e0!3m2!1sid!2sid!4v1733383173160!5m2!1sid!2sid"
               width="50%"

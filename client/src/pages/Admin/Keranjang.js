@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import LoginValidation from "./components/LoginValidation";
 import Footer from "./components/Footer";
 import axios from "axios";
+import AOS from "aos";
+import "aos/dist/aos.css";
 
 const App = () => {
   const navigate = useNavigate();
@@ -10,25 +12,25 @@ const App = () => {
   const [totalharga, setTotalHarga] = useState(0);
   const [totalDiskon, setTotalDiskon] = useState(0);
   const [showNotification, setShowNotification] = useState(false);
-  const [showAlert, setShowAlert] = useState(false); // Added state for alert dialog
+  const [showAlert, setShowAlert] = useState(false);
+  const [popup, setPopup] = useState({ show: false, message: "", type: "" });
   const publicUrl = process.env.PUBLIC_URL;
-  const apiUrl = process.env.REACT_APP_API_URL
+  const apiUrl = process.env.REACT_APP_API_URL;
 
   const handleBackClick = () => {
-    navigate("/Beranda");
+    navigate(-1);
   };
 
   const handleCheckoutClick = () => {
     if (!keranjang || keranjang.length === 0) {
       setShowNotification(true);
       setTimeout(() => {
-        setShowNotification(false); // Sembunyikan notifikasi setelah 3 detik
+        setShowNotification(false);
       }, 2000);
       return;
     }
 
     navigate("/pembayaran");
-    
   };
 
   const formatRupiah = (number) => {
@@ -39,15 +41,12 @@ const App = () => {
   };
 
   useEffect(() => {
+    AOS.init({ duration: 1000, once: true });
     async function fetchingData() {
       try {
-        const cartList = await axios.get(
-          `${apiUrl}/Keranjang/tampilKeranjang`
-        );
+        const cartList = await axios.get(`${apiUrl}/Keranjang/tampilKeranjang`);
         const promises = cartList.data.map((item) => {
-          return axios.get(
-            `${apiUrl}/Menu/tampilMenu/Byid/${item.id_menu}`
-          );
+          return axios.get(`${apiUrl}/Menu/tampilMenu/Byid/${item.id_menu}`);
         });
         const responses = await Promise.all(promises);
         const daftarmenu = responses.map((response) => response.data);
@@ -75,18 +74,22 @@ const App = () => {
     fetchingData();
   }, [apiUrl]);
 
+  useEffect(() => {
+    if (popup.show) {
+      const timer = setTimeout(() => setPopup({ ...popup, show: false }), 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [popup]);
+
   const tambahkeranjang = async (idmenu) => {
     try {
-      const add = await axios.post(
-       `${apiUrl}/Keranjang/tambahKeranjang`,
-        {
-          id_menu: idmenu,
-          jumlah: 1,
-        }
-      );
+      const add = await axios.post(`${apiUrl}/Keranjang/tambahKeranjang`, {
+        id_menu: idmenu,
+        jumlah: 1,
+      });
 
       if (add.data.error) {
-        console.log(add.data.error);
+        setPopup({ show: true, message: add.data.error, type: "error" });
       } else {
         setKeranjang((prevKeranjang) => {
           const updatedKeranjang = prevKeranjang.map((item) =>
@@ -99,7 +102,6 @@ const App = () => {
               : item
           );
 
-          // Recalculate total harga and diskon
           const newTotal = updatedKeranjang.reduce(
             (acc, item) => acc + item.sub_total,
             0
@@ -122,12 +124,9 @@ const App = () => {
 
   const kurangiKeranjang = async (idmenu) => {
     try {
-      const remove = await axios.post(
-        `${apiUrl}/Keranjang/kurangiKeranjang`,
-        {
-          id_menu: idmenu,
-        }
-      );
+      const remove = await axios.post(`${apiUrl}/Keranjang/kurangiKeranjang`, {
+        id_menu: idmenu,
+      });
 
       if (remove.data.error) {
         console.log(remove.data.error);
@@ -145,7 +144,6 @@ const App = () => {
             )
             .filter((item) => item.jumlah > 0);
 
-          // Recalculate total harga and diskon
           const newTotal = updatedKeranjang.reduce(
             (acc, item) => acc + item.sub_total,
             0
@@ -167,16 +165,16 @@ const App = () => {
   };
 
   const hapusDariKeranjang = (idmenu) => {
-    setShowAlert(idmenu); // Simpan idmenu ke dalam state agar bisa digunakan saat konfirmasi
+    setShowAlert(idmenu);
   };
 
   const konfirmasihapus = async () => {
-    if (!showAlert) return; // Pastikan ada item yang dipilih untuk dihapus
+    if (!showAlert) return;
 
     try {
       const remove = await axios.post(
         `${apiUrl}/Keranjang/hapusDariKeranjang`,
-        { id_menu: showAlert } // Gunakan idmenu dari state
+        { id_menu: showAlert }
       );
 
       if (remove.data.error) {
@@ -187,7 +185,6 @@ const App = () => {
             (item) => item.id_menu !== showAlert
           );
 
-          // Recalculate total harga and diskon after removal
           const newTotal = updatedKeranjang.reduce(
             (acc, item) => acc + item.sub_total,
             0
@@ -206,12 +203,13 @@ const App = () => {
     } catch (error) {
       console.error("Error removing item from cart:", error);
     } finally {
-      setShowAlert(false); // Tutup dialog setelah selesai
+      setShowAlert(false);
     }
   };
 
   const renderItem = (id, title, image, price, count, category, index) => (
     <div
+      data-aos="slide-right"
       className="flex items-center bg-[rgba(167,146,119,0.2)] p-2 rounded-lg"
       key={index}
     >
@@ -231,20 +229,20 @@ const App = () => {
       </div>
       <div className="flex items-center">
         <button
-          className="bg-[#D9D9D9] px-[8px] py-[6px] rounded transition transform active:scale-95 mx-[4px]"
+          className="bg-[#D9D9D9] px-[8px] py-[6px] rounded transition transform hover:scale-110 active:scale-95 mx-[4px]"
           onClick={() => kurangiKeranjang(id)}
         >
           -
         </button>
         <span className="bg-[#D9D9D9] px-[8px] py-[6px] rounded">{count}</span>
         <button
-          className="bg-[#D9D9D9] px-[8px] py-[6px] rounded transition transform active:scale-95 mx-[4px]"
+          className="bg-[#D9D9D9] px-[8px] py-[6px] rounded transition transform hover:scale-110 active:scale-95 mx-[4px]"
           onClick={() => tambahkeranjang(id)}
         >
           +
         </button>
         <button
-          className="text-red-500 ml-2"
+          className="text-red-500 ml-2 transition-transform hover:scale-110"
           onClick={() => hapusDariKeranjang(id)}
         >
           <i className="fas fa-trash-alt"></i>
@@ -254,11 +252,18 @@ const App = () => {
   );
 
   return (
-    <div className="flex flex-col max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl mx-auto p-2 sm:p-3 md:p-4 border border-white rounded-lg h-screen">
-      <div className="absolute left-4 top-6 z-20">
+    <div
+      className="flex flex-col max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl mx-auto p-2 sm:p-3 md:p-4 border border-white rounded-lg h-screen"
+      style={{
+        scrollbarWidth: "none", // Untuk Firefox
+        msOverflowStyle: "none", // Untuk Internet Explorer
+        overflow: "hidden", // Menghilangkan scrollbar pada semua browser
+      }}
+    >
+      <div className="absolute left-4 top-4 z-20">
         <button
-          className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center cursor-pointer"
           onClick={handleBackClick}
+          className="text-left w-10 h-10 bg-[rgba(167,146,119,0.2)]  flex items-center justify-center rounded-full transition-all duration-300 ease-in-out transform hover:scale-110"
         >
           <i className="fas fa-chevron-left text-sm"></i>
         </button>
@@ -291,7 +296,10 @@ const App = () => {
         </div>
       </div>
 
-      <div className="bg-[rgba(167,146,119,0.2)] p-3 rounded-lg mt-5 lg:mt-1">
+      <div
+        data-aos="slide-left"
+        className="bg-[rgba(167,146,119,0.2)] p-3 rounded-lg mt-5 lg:mt-1"
+      >
         <div className="flex justify-between mb-2 text-xs sm:text-sm md:text-base">
           <span>Subtotal</span>
           <span>{formatRupiah(totalharga)}</span>
@@ -305,13 +313,14 @@ const App = () => {
           <span>{formatRupiah(totalharga - totalDiskon)}</span>
         </div>
       </div>
-
-      <button
-        className="w-full bg-[#A79277] text-white py-2 rounded-lg font-semibold text-xs sm:text-sm md:text-base mt-3 mb-20"
-        onClick={handleCheckoutClick}
-      >
-        Lanjut Pembayaran
-      </button>
+      <div className="w-full mt-3 mb-20">
+        <button
+          className="w-full bg-[#A79277] text-white py-2 rounded-lg font-semibold text-xs sm:text-sm md:text-base hover:scale-105 transition-transform duration-300"
+          onClick={handleCheckoutClick}
+        >
+          Lanjut Pembayaran
+        </button>
+      </div>
 
       {showAlert && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
@@ -325,19 +334,25 @@ const App = () => {
             </h2>
             <div className="flex justify-center mt-6 space-x-4">
               <button
-                onClick={() => setShowAlert(false)} // Tutup dialog
-                className="bg-gray-300 text-black font-semibold rounded-lg py-2 px-4 hover:bg-gray-400"
+                onClick={() => setShowAlert(false)}
+                className="bg-[rgba(167,146,119,0.2)] text-black font-semibold rounded-lg py-2 px-4 hover:scale-105 transform transition duration-300"
               >
                 Tidak
               </button>
               <button
-                onClick={konfirmasihapus} // Konfirmasi penghapusan
-                className="bg-red-500 text-white font-semibold rounded-lg py-2 px-4 hover:bg-red-600"
+                onClick={konfirmasihapus}
+                className="bg-red-500 text-white font-semibold rounded-lg py-2 px-4 hover:scale-105 transform transition duration-300"
               >
                 Iya
               </button>
             </div>
           </div>
+        </div>
+      )}
+      {popup.show && (
+        <div className="fixed top-10 left-1/2 transform -translate-x-1/2 p-4 rounded-lg shadow-lg z-50 bg-red-500 text-white">
+          <i className="fas fa-times-circle mr-2"></i>
+          {popup.message}
         </div>
       )}
 

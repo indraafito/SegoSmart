@@ -9,9 +9,11 @@ import LoginValidation from "./components/LoginValidation";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import axios from "axios";
+import AOS from "aos";
+import "aos/dist/aos.css";
 
 const AddPromo = () => {
-  const navigate = useNavigate(); // Hook to handle navigation
+  const navigate = useNavigate(); 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPromoExists, setIsPromoExists] = useState(false);
   const [Menu, setMenu] = useState([]);
@@ -22,12 +24,12 @@ const AddPromo = () => {
     setIsPromoExists(false);
   }
 
-  // Handle the back navigation to the /promo page
   const handleBackClick = () => {
     navigate("/promo");
   };
 
   useEffect(() => {
+    AOS.init({ duration: 400, once: true });
     async function fetchData() {
       const response = await axios.get(`${apiUrl}/Menu/tampilMenu/All`);
       setMenu(response.data);
@@ -55,19 +57,17 @@ const AddPromo = () => {
     try {
       const response = await axios.post(`${apiUrl}/Promo/tambahPromo`, data);
 
-      // Memastikan kondisi jika promo sudah ada
       if (
         response.data.success === false &&
         response.data.message === "Promo sudah ada untuk menu ini"
       ) {
-        setIsPromoExists(true); // Tampilkan modal jika promo sudah ada
+        setIsPromoExists(true); 
       } else if (response.data.success) {
-        setIsModalOpen(true); // Tampilkan modal sukses jika promo berhasil ditambahkan
+        setIsModalOpen(true); 
       }
     } catch (error) {
-      // Menangani error jika terjadi kesalahan
       console.error("Error adding promo:", error);
-      setIsPromoExists(true); // Tampilkan modal jika terjadi error yang mengindikasikan promo sudah ada
+      setIsPromoExists(true); 
     }
   };
 
@@ -78,8 +78,8 @@ const AddPromo = () => {
       {/* Tombol Back di kiri atas */}
       <div className="absolute left-4 top-4 z-10">
         <button
-          className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center cursor-pointer"
-          onClick={handleBackClick} // Navigate back to /promo
+          className="w-10 h-10 bg-[rgba(167,146,119,0.2)] rounded-full flex items-center justify-center cursor-pointer hover:scale-105 transform transition duration-300"
+          onClick={handleBackClick} 
         >
           <i className="fas fa-chevron-left"></i>
         </button>
@@ -100,7 +100,7 @@ const AddPromo = () => {
             <button
               onClick={() => {
                 closeModal();
-                navigate("/promo"); // Arahkan ke halaman promo
+                navigate("/promo"); 
               }}
               className="mt-6 bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600"
             >
@@ -233,7 +233,7 @@ const AddPromo = () => {
 
           <div className="flex justify-end mt-6 space-x-2">
             <button
-              className="px-2 py-1 sm:px-3 sm:py-2 bg-green-500 text-white rounded-md"
+              className="px-2 py-1 sm:px-3 sm:py-2 bg-[#A79277] text-white rounded-md hover:scale-105 transform transition duration-300"
               type="submit"
             >
               Tambah Promo
