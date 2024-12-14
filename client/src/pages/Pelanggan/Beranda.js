@@ -140,15 +140,15 @@ const Homepage = () => {
         data-aos="fade-down"
         className="text-center pt-8 bg-[rgba(167,146,119,0.2)]"
       >
-        <div className="container mx-auto flex flex-col md:flex-row items-center justify-center px-4 sm:px-8 md:px-16">
+        <div className="container mx-auto flex flex-col md:flex-row items-center justify-center px-8">
           <div className="text-left mx-auto md:mr-8 md:ml-16 w-full">
-            <h1 className="text-5xl sm:text-4xl md:text-6xl font-bold text-[#000]">
+            <h1 className="text-4xl sm:text-5xl md:text-4xl lg:text-5xl font-bold text-[#000]">
               Selamat Datang di{" "}
             </h1>
-            <h1 className="text-5xl sm:text-4xl md:text-6xl font-bold text-[#A79277]">
+            <h1 className="text-4xl sm:text-5xl md:text-4xl lg:text-5xl font-bold text-[#A79277]">
               Sego Resek
             </h1>
-            <p className="text-gray-600 mt-0 sm:mt-4 text-left sm:text-lg md:text-xl lg:text-2xl max-w-lg sm:max-w-xl md:max-w-2xl mx-auto md:ml-0">
+            <p className="text-gray-600 mt-1 sm:mt-4 text-left sm:text-lg md:text-base lg:text-xl max-w-lg sm:max-w-xl md:max-w-2xl mx-auto md:ml-0">
               Nikmati cita rasa ayam yang menggugah selera, dengan bumbu yang
               kaya dan tekstur yang sempurna, setiap suapan membawa kenikmatan
               tersendiri.
@@ -173,14 +173,15 @@ const Homepage = () => {
 
       <section
         data-aos="fade-up"
-        className="text-center py-8 bg-gradient-to-b from-[rgba(167,146,119,0.2)] to-white"
+        className="text-center pb-5 pt-10 bg-gradient-to-b from-[rgba(167,146,119,0.2)] to-white px-8"
       >
         <div className="container mx-auto flex flex-col md:flex-row items-center justify-center px-4 sm:px-8 md:px-16">
           <img
             src={`${publicUrl}/images/menu/Sego Resek Jingkrak Hitam.png`}
             alt="Hien Bowl"
-            className="w-3/4 sm:w-2/3 mb-4 sm:mb-0 sm:mr-8"
+            className="w-2/3 sm:w-1/2 md:w-1/3 lg:w-1/2 mb-4 sm:mb-0 sm:mr-8"
           />
+
           <div className="w-full sm:w-2/3 text-left">
             <h2 className="text-4xl font-bold text-[#A79277]">Tentang Kami</h2>
             <p className="text-gray-600 mt-4 text-justify">
@@ -195,7 +196,7 @@ const Homepage = () => {
         </div>
       </section>
 
-      <div className=" px-2 mt-5 pb-2 sm:px-10">
+      <div className=" px-2 mt-5 pb-2 sm:px-12">
         <h2 className="text-xl font-bold text-left mb-4">Promo</h2>
         <div
           className="flex overflow-x-auto overflow-hidden space-x-4"
@@ -215,7 +216,7 @@ const Homepage = () => {
         </div>
       </div>
 
-      <section className="pb-10 px-2 mt-10 sm:px-10">
+      <section className="pb-10 px-2 mt-10 sm:px-12">
         <div className="flex justify-between items-center mb-2">
           <h2 className="text-xl font-bold">Makanan</h2>
           <Link to="/menup" className="text-sm font-semibold">
@@ -232,7 +233,7 @@ const Homepage = () => {
         </div>
       </section>
 
-      <section className="pb-10 mt-10 px-4 sm:px-10">
+      <section className="pb-10 mt-10 px-4 sm:px-12">
         <div className="flex justify-between items-center mb-2">
           <h2 className="text-xl font-bold">Minuman</h2>
           <Link to="/menup" className="text-sm font-semibold">

@@ -70,7 +70,7 @@ const App = () => {
         >
           <div className="flex justify-between items-center w-full">
             <Link
-              to= {-1}
+              to= {"/berandap"}
               className="w-10 h-10 bg-[rgba(167,146,119,0.2)] rounded-full flex items-center justify-center cursor-pointer transition-all duration-300 ease-in-out transform hover:scale-110"
             >
               <i className="fas fa-chevron-left text-gray-600"></i>
@@ -135,7 +135,7 @@ const App = () => {
           </div>
         </header>
 
-        <section data-aos="slide-up" className="mb-4 mx-5">
+        <section data-aos="slide-up" className="mb-4 px-10">
           <div className="flex justify-between items-center mb-2">
             <h2 className="text-xl font-bold">Menu</h2>
           </div>

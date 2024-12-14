@@ -13,7 +13,7 @@ import AOS from "aos";
 import "aos/dist/aos.css";
 
 const AddPromo = () => {
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPromoExists, setIsPromoExists] = useState(false);
   const [Menu, setMenu] = useState([]);
@@ -61,25 +61,23 @@ const AddPromo = () => {
         response.data.success === false &&
         response.data.message === "Promo sudah ada untuk menu ini"
       ) {
-        setIsPromoExists(true); 
+        setIsPromoExists(true);
       } else if (response.data.success) {
-        setIsModalOpen(true); 
+        setIsModalOpen(true);
       }
     } catch (error) {
       console.error("Error adding promo:", error);
-      setIsPromoExists(true); 
+      setIsPromoExists(true);
     }
   };
 
-
-
   return (
-    <div className="container mx-auto sm:px-2 md:px-4 lg:px-8 xl:px-12 p-4 rounded-lg relative">
+    <div className="">
       {/* Tombol Back di kiri atas */}
       <div className="absolute left-4 top-4 z-10">
         <button
           className="w-10 h-10 bg-[rgba(167,146,119,0.2)] rounded-full flex items-center justify-center cursor-pointer hover:scale-105 transform transition duration-300"
-          onClick={handleBackClick} 
+          onClick={handleBackClick}
         >
           <i className="fas fa-chevron-left"></i>
         </button>
@@ -100,7 +98,7 @@ const AddPromo = () => {
             <button
               onClick={() => {
                 closeModal();
-                navigate("/promo"); 
+                navigate("/promo");
               }}
               className="mt-6 bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600"
             >
@@ -141,8 +139,8 @@ const AddPromo = () => {
         Menu={Menu}
       >
         <Form>
-          <div className="space-y-6">
-            <h2 className="text-lg font-bold text-center sm:text-xl">
+          <div className="space-y-6 px-20">
+            <h2 className="text-lg font-bold text-center sm:text-xl pt-5">
               Tambahkan Promo & Stok
             </h2>
             <div className="space-y-4">
@@ -151,87 +149,109 @@ const AddPromo = () => {
               </h3>
 
               {/* Nama Promo */}
-              <div className="flex items-center space-y-2">
-                <label className="block font-semibold w-full sm:w-1/4 text-left">
-                  Nama Promo
-                </label>
-                <Field
-                  type="text"
-                  name="nama_promo"
-                  placeholder="Masukkan Nama promo"
-                  className="w-full sm:w-3/4 p-2 mt-1 bg-[rgba(167,146,119,0.2)] rounded-md"
-                />
+              <div className="flex flex-col space-y-2">
+                <div className="flex items-center space-x-4">
+                  <label className="block font-semibold w-full sm:w-1/4 text-left">
+                    Nama Promo
+                  </label>
+
+                  <div className="w-full sm:w-3/4">
+                    <Field
+                      type="text"
+                      name="nama_promo"
+                      placeholder="Masukkan Nama promo"
+                      className="w-full p-2 mt-1 bg-[rgba(167,146,119,0.2)] rounded-md focus:outline-none"
+                    />
+
+                    <ErrorMessage
+                      name="nama_promo"
+                      component="span"
+                      className="text-red-500 text-sm block mt-1"
+                    />
+                  </div>
+                </div>
               </div>
-              <ErrorMessage
-                name="nama_promo"
-                component="span"
-                className="text-red-500 text-sm"
-              />
 
               {/* Potongan Harga */}
-              <div className="flex items-center space-y-2">
-                <label className="block font-semibold w-full sm:w-1/4 text-left">
-                  Diskon _%
-                </label>
-                <Field
-                  type="text"
-                  name="diskon"
-                  placeholder="Masukkan Potongan Harga"
-                  className="w-full sm:w-3/4 p-2 mt-1 bg-[rgba(167,146,119,0.2)] rounded-md"
-                />
+              <div className="flex flex-col space-y-2">
+                <div className="flex items-center space-x-4">
+                  <label className="block font-semibold w-full sm:w-1/4 text-left">
+                    Diskon _%
+                  </label>
+
+                  <div className="w-full sm:w-3/4">
+                    <Field
+                      type="text"
+                      name="diskon"
+                      placeholder="Masukkan Potongan Harga"
+                      className="w-full p-2 mt-1 bg-[rgba(167,146,119,0.2)] rounded-md focus:outline-none"
+                    />
+
+                    <ErrorMessage
+                      name="diskon"
+                      component="span"
+                      className="text-red-500 text-sm block mt-1"
+                    />
+                  </div>
+                </div>
               </div>
-              <ErrorMessage
-                name="diskon"
-                component="span"
-                className="text-red-500 text-sm"
-              />
 
               {/* Daftar Menu */}
 
-              <div className="flex items-center space-y-2">
-                <label className="block font-semibold w-full sm:w-1/4 text-left">
-                  Daftar Menu
-                </label>
-                <Field
-                  as="select"
-                  name="id_menu"
-                  className="w-full sm:w-3/4 p-2 mt-1 bg-[rgba(167,146,119,0.2)] rounded-md"
-                >
-                  <option value="">Pilih daftar menu</option>
-                  {Menu.map((menu) => (
-                    <option key={menu.id_menu} value={menu.id_menu}>
-                      {menu.nama_menu}
-                    </option>
-                  ))}
-                </Field>
+              <div className="flex flex-col space-y-2">
+                <div className="flex items-center space-x-4">
+                  <label className="block font-semibold w-full sm:w-1/4 text-left">
+                    Daftar Menu
+                  </label>
+
+                  <div className="w-full sm:w-3/4">
+                    <Field
+                      as="select"
+                      name="id_menu"
+                      className="w-full p-2 mt-1 bg-[rgba(167,146,119,0.2)] rounded-md"
+                    >
+                      <option value="">Pilih daftar menu</option>
+                      {Menu.map((menu) => (
+                        <option key={menu.id_menu} value={menu.id_menu}>
+                          {menu.nama_menu}
+                        </option>
+                      ))}
+                    </Field>
+
+                    <ErrorMessage
+                      name="id_menu"
+                      component="span"
+                      className="text-red-500 text-sm block mt-1"
+                    />
+                  </div>
+                </div>
               </div>
-              <ErrorMessage
-                name="id_menu"
-                component="span"
-                className="text-red-500 text-sm"
-              />
 
               {/* Deskripsi */}
-              <div className="flex items-start space-y-2">
-                <label className="block font-semibold w-full sm:w-1/4 text-left">
-                  Deskripsi
-                </label>
-                <Field
-                  as="textarea"
-                  name="deskripsi"
-                  placeholder="Masukkan Deskripsi"
-                  className="w-full sm:w-3/4 p-2 mt-1 bg-[rgba(167,146,119,0.2)] rounded-md h-24"
-                ></Field>
-              </div>
-              <ErrorMessage
-                name="deskripsi"
-                component="span"
-                className="text-red-500 text-sm"
-              />
-            </div>
-          </div>
+              <div className="flex flex-col space-y-2">
+                <div className="flex items-start space-x-4">
+                  <label className="block font-semibold w-full sm:w-1/4 text-left">
+                    Deskripsi
+                  </label>
 
-          <div className="flex justify-end mt-6 space-x-2">
+                  <div className="w-full sm:w-3/4">
+                    <Field
+                      as="textarea"
+                      name="deskripsi"
+                      placeholder="Masukkan Deskripsi"
+                      className="w-full  p-2 mt-1 bg-[rgba(167,146,119,0.2)] rounded-md h-24 focus:outline-none"
+                    />
+
+                    <ErrorMessage
+                      name="deskripsi"
+                      component="span"
+                      className="text-red-500 text-sm block mt-1"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="flex justify-end mt-6 space-x-2">
             <button
               className="px-2 py-1 sm:px-3 sm:py-2 bg-[#A79277] text-white rounded-md hover:scale-105 transform transition duration-300"
               type="submit"
@@ -239,6 +259,9 @@ const AddPromo = () => {
               Tambah Promo
             </button>
           </div>
+          </div>
+
+          
           <LoginValidation />
         </Form>
       </Formik>

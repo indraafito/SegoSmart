@@ -78,14 +78,32 @@ const Homepage = () => {
       />
       <h3 className="text-sm text-left font-bold mt-4">{name}</h3>
       <p className="text-sm text-left">{formatRupiah(price)}</p>
-      <div className="absolute top-2 right-2 bg-[#A79277] text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">
+      <div
+        className={`absolute top-2 right-2 w-6 h-6 rounded-full flex items-center justify-center text-xs text-white ${
+          stok > 0 ? "bg-[#A79277]" : "bg-[#a792777d]"
+        }`}
+      >
         {stok}
       </div>
       <button
-        className="absolute bottom-2 right-2 bg-[#A79277] text-white p-0 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ease-in-out transform hover:bg-[#c3a37a] hover:scale-110 active:scale-95 active:bg-[#d4b48b] active:shadow-lg"
-        onClick={() => addKeranjang(id)}
+        className={`absolute bottom-2 right-2 p-0 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ease-in-out transform active:scale-95 active:shadow-lg ${
+          stok > 0
+            ? "bg-[#A79277] hover:bg-[#c3a37a] hover:scale-110 active:bg-[#d4b48b]"
+            : "bg-[#a792777d] cursor-not-allowed"
+        }`}
+        onClick={() => {
+          if (stok > 0) {
+            addKeranjang(id);
+          } else {
+            setPopup({
+              show: true,
+              message: "Stok habis!",
+              type: "error",
+            });
+          }
+        }}
       >
-        <i className="fas fa-shopping-cart"></i>
+        <i className="fas fa-shopping-cart text-white"></i>
       </button>
     </div>
   );
@@ -130,7 +148,7 @@ const Homepage = () => {
         setMakanan((prevMakanan) =>
           prevMakanan.map((item) =>
             item.id_menu === idmenu && item.stok > 0
-              ? { ...item, stok: item.stok - 1 }
+              ? { ...item, stok: Math.max(0, item.stok - 1) }
               : item
           )
         );
@@ -138,7 +156,7 @@ const Homepage = () => {
         setMinuman((prevMinuman) =>
           prevMinuman.map((item) =>
             item.id_menu === idmenu && item.stok > 0
-              ? { ...item, stok: item.stok - 1 }
+              ? { ...item, stok: Math.max(0, item.stok - 1) }
               : item
           )
         );
@@ -194,7 +212,7 @@ const Homepage = () => {
           </button>
         </div>
       </header>
-      <div className="mb-4 px-2 ">
+      <div className="mb-4 px-10">
         <div
           className="flex overflow-x-auto overflow-hidden space-x-4 "
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
@@ -211,7 +229,7 @@ const Homepage = () => {
         </div>
       </div>
 
-      <section className="mb-4 px-2">
+      <section className="mb-4 px-10">
         <div className="flex justify-between items-center mb-2">
           <h2 className="text-xl font-bold">Makanan</h2>
           <Link to="/cari" className="text-sm font-semibold">
@@ -235,7 +253,7 @@ const Homepage = () => {
         </div>
       </section>
 
-      <section className="mb-4 px-2">
+      <section className="mb-4 px-10">
         <div className="flex justify-between items-center mb-2">
           <h2 className="text-xl font-bold">Minuman</h2>
           <Link to="/cari" className="text-sm font-semibold">

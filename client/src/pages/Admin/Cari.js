@@ -10,6 +10,8 @@ import "aos/dist/aos.css";
 
 const FoodItem = React.memo(
   ({ imgSrc, title, price, stok, id, addKeranjang }) => {
+    const isOutOfStock = stok === 0;
+
     return (
       <div
         data-aos="slide-up"
@@ -22,19 +24,29 @@ const FoodItem = React.memo(
         />
         <h3 className="text-sm font-bold truncate">{title}</h3>
         <p className="text-sm">{price}</p>
-        <div className="absolute top-2 right-2 bg-[#A79277] text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">
+        <div
+          className={`absolute top-2 right-2 w-6 h-6 rounded-full flex items-center justify-center text-xs ${
+            isOutOfStock ? 'bg-[#a792777d] text-white' : 'bg-[#A79277] text-white'
+          }`}
+        >
           {stok}
         </div>
         <button
-          className="absolute bottom-2 right-2 bg-[#A79277] text-white p-0 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ease-in-out transform hover:bg-[#c3a37a] hover:scale-110 active:scale-95 active:bg-[#d4b48b] active:shadow-lg"
-          onClick={() => addKeranjang(id)}
+          className={`absolute bottom-2 right-2 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ease-in-out transform ${
+            isOutOfStock
+              ? 'bg-[#a792777d] cursor-not-allowed'
+              : 'bg-[#A79277] text-white hover:bg-[#c3a37a] active:scale-95 active:bg-[#d4b48b] active:shadow-lg'
+          }`}
+          onClick={() => !isOutOfStock && addKeranjang(id)} // Prevent action if out of stock
+          disabled={isOutOfStock} // Disable button if out of stock
         >
-          <i className="fas fa-shopping-cart"></i>
+          <i className="fas fa-shopping-cart text-white"></i>
         </button>
       </div>
     );
   }
 );
+
 
 const App = () => {
   const publicUrl = process.env.PUBLIC_URL;
@@ -204,10 +216,8 @@ const App = () => {
           </div>
         </header>
 
-        {/* Search Bar */}
-
         {/* Menu Section */}
-        <section className="mb-4 mx-5">
+        <section className="mb-4 px-10">
           <div className="flex justify-between items-center mb-2">
             <h2 className="text-xl font-bold">Menu</h2>
           </div>

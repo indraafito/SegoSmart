@@ -13,7 +13,7 @@ const App = () => {
   const handleLogout = () => {
     localStorage.removeItem("admin");
 
-    navigate("/login");
+    navigate("/");
   };
 
   const goToAccount = () => navigate("/infoakun");
@@ -23,7 +23,7 @@ const App = () => {
   const goToMenu = () => navigate("/Kelolamenu");
 
   return (
-    <div className="flex flex-col items-center justify-between min-h-screen bg-white">
+    <div className="flex flex-col items-center justify-between min-h-screen bg-white px-10">
       {/* Header Section */}
       <div className="flex flex-col items-center mt-10 w-full">
         <div className="flex flex-col sm:flex-row items-center sm:space-x-6 lg:space-x-8 mb-6 w-full max-w-screen-lg px-2">

@@ -51,7 +51,7 @@ function App() {
       }, 2000);
       return;
     }
-    const riwayat = await axios.post(${apiUrl}/riwayat/unggahriwayat, {
+    const riwayat = await axios.post(`${apiUrl}/riwayat/unggahriwayat`, {
       total_temp: totalharga,
       total_diskon: totalDiskon,
       total_harga: totalharga - totalDiskon,
@@ -60,7 +60,7 @@ function App() {
     });
     if (riwayat.data.succes) {
       const items = keranjanglist.map((item) => {
-        return axios.post(${apiUrl}/ItemPesanan/unggahitemriwayat, {
+        return axios.post(`${apiUrl}/ItemPesanan/unggahitemriwayat`, {
           id_riwayat: riwayat.data.id,
           id_menu: item.id_menu,
           jumlah: item.jumlah,
@@ -72,7 +72,7 @@ function App() {
       await Promise.all(items);
 
       console.log("Done");
-      const deleteKeranjang = await axios.post(${apiUrl}/Keranjang/deleteAll);
+      const deleteKeranjang = await axios.post(`${apiUrl}/Keranjang/deleteAll`);
 
       if (deleteKeranjang.data.success) {
         setShowSuccessPopup(true);
@@ -88,7 +88,7 @@ function App() {
   const handleCloseScan = async () => {
     setShowCamera(false);
     console.log(analysisResult);
-    const rating = await axios.post(${apiUrl}/riwayat/unggahKepuasan, {
+    const rating = await axios.post(`${apiUrl}/riwayat/unggahKepuasan`, {
       kepuasan: analysisResult,
     });
     console.log(rating.data);

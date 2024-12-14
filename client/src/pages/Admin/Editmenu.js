@@ -14,11 +14,11 @@ function App() {
   const [menu, setMenu] = useState([]);
 
   const [success, setSuccess] = useState(false);
-  const [render, setRender] = useState(false)
+  const [render, setRender] = useState(false);
 
   const apiUrl = process.env.REACT_APP_API_URL;
   const publicUrl = process.env.PUBLIC_URL;
-  
+
   function handleBackClick() {
     navigate("/kelolamenu");
   }
@@ -30,26 +30,27 @@ function App() {
       );
 
       setMenu(menulist.data);
-      const image = await fetch (publicUrl + "/images/menu/"+ menulist.data.gambar);
+      const image = await fetch(
+        publicUrl + "/images/menu/" + menulist.data.gambar
+      );
       const blob = await image.blob();
-      const file = new File([blob],menulist.data.gambar,{type:blob.type});
+      const file = new File([blob], menulist.data.gambar, { type: blob.type });
 
       setGambar(file);
       setPrevGambar(file);
-      setRender(true)
+      setRender(true);
     }
     fetchingData();
-  }, [id_menu,publicUrl,apiUrl]);
+  }, [id_menu, publicUrl, apiUrl]);
 
   const initialValues = {
     nama_menu: menu.nama_menu,
-    harga:menu.harga,
-    stok:menu.stok,
-    kategori:menu.kategori,
-    deskripsi:menu.deskripsi,
-    gambar:gambar
-    
-  }
+    harga: menu.harga,
+    stok: menu.stok,
+    kategori: menu.kategori,
+    deskripsi: menu.deskripsi,
+    gambar: gambar,
+  };
 
   const validationSchema = Yup.object().shape({
     nama_menu: Yup.string().required("Nama Menu tidak boleh kosong."),
@@ -59,14 +60,10 @@ function App() {
     deskripsi: Yup.string().required(),
     gambar: Yup.mixed()
       .required("Gambar tidak boleh kosong")
-      .test(
-        "fileType",
-        "File yang diunggah harus berupa gambar",
-        (value) => {
+      .test("fileType", "File yang diunggah harus berupa gambar", (value) => {
         if (!value) return true;
         return value && value.type && value.type.startsWith("image/");
-      }
-      ),
+      }),
   });
 
   const handleFileChange = (e) => {
@@ -86,20 +83,23 @@ function App() {
         harga: data.harga,
         stok: data.stok,
         deskripsi: data.deskripsi,
-        gambar: data.gambar.name 
+        gambar: data.gambar.name,
       });
 
-      console.log(menuUpdate.data)
+      console.log(menuUpdate.data);
 
       if (menuUpdate.data.error) {
         console.log("Error updating menu:", menuUpdate.data.error);
       } else {
         if (prevGambar !== gambar) {
-          const deleteGambar = await axios.post(`${apiUrl}/uploadGambar/Menu/deleteGambar`,{fileUrl: prevGambar.name});
-          if(!deleteGambar.data.error){
+          const deleteGambar = await axios.post(
+            `${apiUrl}/uploadGambar/Menu/deleteGambar`,
+            { fileUrl: prevGambar.name }
+          );
+          if (!deleteGambar.data.error) {
             const formData = new FormData();
             formData.append("gambar", data.gambar);
-  
+
             const upload = await axios.post(
               `${apiUrl}/uploadGambar/Menu`,
               formData,
@@ -114,7 +114,6 @@ function App() {
               return;
             }
           }
-
         }
         setSuccess(true);
         console.log("Menu successfully updated!");
@@ -124,9 +123,8 @@ function App() {
     }
   };
 
-
   return (
-    <div className="container mx-auto p-4 rounded-lg relative">
+    <div className="">
       <div className="absolute left-4 top-4 z-10">
         <button
           className="w-10 h-10 bg-[rgba(167,146,119,0.2)] rounded-full flex items-center justify-center cursor-pointer hover:scale-105 transform transition duration-300"
@@ -158,142 +156,180 @@ function App() {
           onSubmit={onSubmit}
         >
           {({ setFieldValue }) => (
-            <Form className="space-y-4">
-              <h2 className="text-lg font-bold text-center sm:text-xl">
-                Edit Menu & Stok
+            <Form className="space-y-4 px-20">
+              <h2 className="text-lg font-bold text-center sm:text-xl pt-5">
+                Tambahkan Menu & Stok
               </h2>
-              <h3 className="text-md font-bold text-left mt-4">
+              <h3 className="text-md font-bold text-left">
                 Informasi Menu & Stok
               </h3>
-              <ErrorMessage
-                name="nama_menu"
-                component="span"
-                className="text-[#ff0000]"
-              />
-              <div className="flex items-center space-y-2">
-                <label className="block font-semibold w-full sm:w-1/4 text-left">
+              <div className="flex items-center space-x-4">
+                <label className="block font-semibold w-1/4 text-left">
                   Nama Menu
                 </label>
-                <Field
-                  type="text"
-                  name="nama_menu"
-                  placeholder="Masukkan Nama Menu"
-                  className="w-full sm:w-3/4 p-2 bg-[rgba(167,146,119,0.2)] rounded-md focus:outline-none"
-                />
+
+                <div className="w-3/4">
+                  <Field
+                    type="text"
+                    name="nama_menu"
+                    placeholder="Masukkan Nama Menu"
+                    className="w-full p-2 bg-[rgba(167,146,119,0.2)] rounded-md focus:outline-none"
+                  />
+
+                  <ErrorMessage
+                    name="nama_menu"
+                    component="span"
+                    className="text-[#ff0000] text-sm block mt-1"
+                  />
+                </div>
               </div>
-              <ErrorMessage
-                name="harga"
-                component="span"
-                className="text-[#ff0000]"
-              />
-              <div className="flex items-center space-y-2">
-                <label className="block font-semibold w-full sm:w-1/4 text-left">
+
+              <div className="flex items-center space-x-4">
+                <label className="block font-semibold w-1/4 text-left">
                   Harga
                 </label>
-                <Field
-                  type="number"
-                  name="harga"
-                  placeholder="Masukkan Harga"
-                  className="w-full sm:w-3/4 p-2 bg-[rgba(167,146,119,0.2)] rounded-md focus:outline-none"
-                />
+
+                <div className="w-3/4">
+                  <Field
+                    type="number"
+                    name="harga"
+                    placeholder="Masukkan Harga"
+                    className="w-full p-2 bg-[rgba(167,146,119,0.2)] rounded-md focus:outline-none"
+                  />
+
+                  <ErrorMessage
+                    name="harga"
+                    component="span"
+                    className="text-[#ff0000] text-sm block mt-1"
+                  />
+                </div>
               </div>
-              <ErrorMessage
-                name="stok"
-                component="span"
-                className="text-[#ff0000]"
-              />
-              <div className="flex items-center space-y-2">
-                <label className="block font-semibold w-full sm:w-1/4 text-left">
-                  Stok
-                </label>
-                <Field
-                  type="number"
-                  name="stok"
-                  placeholder="Masukkan Stok"
-                  className="w-full sm:w-3/4 p-2 bg-[rgba(167,146,119,0.2)] rounded-md focus:outline-none"
-                />
+
+              <div className="flex flex-col space-y-2">
+                <div className="flex items-center space-x-4">
+                  <label className="block font-semibold w-1/4 text-left">
+                    Stok
+                  </label>
+
+                  <div className="w-3/4">
+                    <Field
+                      type="number"
+                      name="stok"
+                      placeholder="Masukkan Stok"
+                      className="w-full p-2 bg-[rgba(167,146,119,0.2)] rounded-md focus:outline-none"
+                    />
+
+                    <ErrorMessage
+                      name="stok"
+                      component="span"
+                      className="text-[#ff0000] text-sm block mt-1"
+                    />
+                  </div>
+                </div>
               </div>
-              <ErrorMessage
-                name="kategori"
-                component="span"
-                className="text-[#ff0000]"
-              />
-              <div className="flex items-center space-y-2">
-                <label className="block font-semibold w-full sm:w-1/4 text-left">
-                  Kategori
-                </label>
-                <Field
-                  as="select"
-                  name="kategori"
-                  className="w-full sm:w-3/4 p-2 bg-[rgba(167,146,119,0.2)] rounded-md focus:outline-none cursor-pointer"
-                  disabled
-                >
-                  <option value="">Pilih Kategori</option>
-                  <option value="makanan">Makanan</option>
-                  <option value="minuman">Minuman</option>
-                </Field>
+
+              <div className="flex flex-col space-y-2">
+                <div className="flex items-center space-x-4">
+                  <label className="block font-semibold w-1/4 text-left">
+                    Kategori
+                  </label>
+
+                  <div className="w-3/4">
+                    <Field
+                      as="select"
+                      name="kategori"
+                      className="w-full p-2 bg-[rgba(167,146,119,0.2)] rounded-md focus:outline-none cursor-pointer"
+                    >
+                      <option value="">Pilih Kategori</option>
+                      <option value="makanan">Makanan</option>
+                      <option value="minuman">Minuman</option>
+                    </Field>
+
+                    <ErrorMessage
+                      name="kategori"
+                      component="span"
+                      className="text-[#ff0000] text-sm block mt-1"
+                    />
+                  </div>
+                </div>
               </div>
-              <ErrorMessage
-                name="deskripsi"
-                component="span"
-                className="text-[#ff0000]"
-              />
-              <div className="flex items-start space-y-2">
-                <label className="block font-semibold w-full sm:w-1/4 text-left">
-                  Deskripsi
-                </label>
-                <Field
-                  as="textarea"
-                  name="deskripsi"
-                  placeholder="Masukkan Deskripsi"
-                  className="w-full sm:w-3/4 p-2 bg-[rgba(167,146,119,0.2)] rounded-md focus:outline-none h-24"
-                />
+
+              <div className="flex flex-col space-y-2">
+                <div className="flex items-start space-x-4">
+                  <label className="block font-semibold w-1/4 text-left">
+                    Deskripsi
+                  </label>
+
+                  <div className="w-3/4">
+                    <Field
+                      as="textarea"
+                      name="deskripsi"
+                      placeholder="Masukkan Deskripsi"
+                      className="w-full p-2 bg-[rgba(167,146,119,0.2)] rounded-md focus:outline-none h-24"
+                    />
+
+                    <ErrorMessage
+                      name="deskripsi"
+                      component="span"
+                      className="text-[#ff0000] text-sm block mt-1"
+                    />
+                  </div>
+                </div>
               </div>
-              <ErrorMessage
-                name="gambar"
-                component="span"
-                className="text-[#ff0000]"
-              />
+
               <div className="flex flex-col space-y-2 sm:flex-row sm:items-center">
                 <label className="block font-semibold w-full sm:w-1/4 text-left">
-                  Gambar
+                  Foto Menu
                 </label>
-                <div className="w-full sm:w-3/4">
+
+                <div className="w-full sm:w-3/4 ml-4">
                   <div className="h-[100px] bg-[rgba(167,146,119,0.2)] rounded-md flex items-center justify-center relative">
                     <input
                       type="file"
+                      accept="image/*"
+                      className="absolute inset-0 opacity-0 cursor-pointer"
                       name="gambar"
                       onChange={(e) => {
                         setGambar(e.target.files[0]);
                         const newFile = handleFileChange(e);
                         setFieldValue("gambar", newFile);
                       }}
-                      className="absolute inset-0 opacity-0 cursor-pointer"
                     />
                     <label
                       htmlFor="menuPhoto"
                       className="cursor-pointer flex items-center"
                     >
-                      {gambar && (
-                        <div className="mt-2">
-                          <img
-                            src={URL.createObjectURL(gambar)}
-                            alt="Preview"
-                            className="h-[150px] object-cover rounded"
-                          />
-                        </div>
+                      {gambar ? (
+                        <img
+                          src={URL.createObjectURL(gambar)}
+                          alt="menu"
+                          className="h-[100px]"
+                        />
+                      ) : (
+                        <>
+                          <i className="fas fa-plus-circle text-gray-400 text-2xl"></i>
+                          <span className="ml-2 text-gray-400">
+                            Pilih Gambar
+                          </span>
+                        </>
                       )}
                     </label>
                   </div>
+
+                  <ErrorMessage
+                    name="gambar"
+                    component="span"
+                    className="text-[#ff0000] text-sm block mt-1"
+                  />
                 </div>
               </div>
 
               <div className="flex justify-end mt-6 space-x-2">
                 <button
+                  className="px-2 py-1 sm:px-3 sm:py-2 bg-[#A79277] text-white rounded-md hover:scale-105 transform transition duration-300"
                   type="submit"
-                  className="bg-[#a79277] text-white py-2 px-4 rounded hover:scale-105 transform transition duration-300"
                 >
-                  Update Menu
+                  Tambah Menu
                 </button>
               </div>
             </Form>
